@@ -14,7 +14,7 @@ void ComparatorUnit4Bit::compute_comparison() {
   bool lt = (val_a < val_b);
 
   // 3. Escribimos en las salidas de 4 bits
-  // El bit 0 contendrá el resultado, los bits 1, 2 y 3 serán siempre 0
+  // El bit 0 contendra el resultado, los bits 1, 2 y 3 seran siempre 0
   for (int i = 0; i < 4; i++) {
     if (i == 0) {
       out_equal[i].write(eq);

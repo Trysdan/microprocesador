@@ -1,30 +1,30 @@
 cmake_minimum_required(VERSION 3.14)
 project(MicroprocesadorSystemC CXX)
 
-# SystemC recomienda fuertemente el uso de C++17 o superior para las versiones más recientes
+# SystemC recomienda fuertemente el uso de C++17 o superior para las versiones mas recientes
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # ==========================================
-# Configuración de SystemC
+# Configuracion de SystemC
 # ==========================================
-# Opción 1: Buscar paquete si SystemC fue instalado mediante CMake
+# Opcion 1: Buscar paquete si SystemC fue instalado mediante CMake
 find_package(SystemC CONFIG QUIET HINTS $ENV{SYSTEMC_HOME})
 
 if(NOT SystemC_FOUND)
-    message(STATUS "SystemC_FOUND no se resolvió vía find_package. Configuraremos manualmente usando la variable de entorno SYSTEMC_HOME")
+    message(STATUS "SystemC_FOUND no se resolvio via find_package. Configuraremos manualmente usando la variable de entorno SYSTEMC_HOME")
     
     if("$ENV{SYSTEMC_HOME}" STREQUAL "")
-        message(FATAL_ERROR "No se encontró SystemC y la variable de entorno SYSTEMC_HOME está vacía. Por favor configúrala apuntando al directorio raíz de SystemC.")
+        message(FATAL_ERROR "No se encontro SystemC y la variable de entorno SYSTEMC_HOME esta vacia. Por favor configurala apuntando al directorio raiz de SystemC.")
     endif()
 
-    # Declaramos SystemC como una librería externa
+    # Declaramos SystemC como una libreria externa
     add_library(SystemC::systemc SHARED IMPORTED)
     
-    # Resolviendo la arquitectura de la librería (Depende del compilador / OS)
+    # Resolviendo la arquitectura de la libreria (Depende del compilador / OS)
     if(WIN32)
         set(SYS_C_LIB_NAME "systemc.lib")
-        # El directorio lib-mingw, lib-cygwin o lib según compilador en Windows
+        # El directorio lib-mingw, lib-cygwin o lib segun compilador en Windows
         set(SYS_C_LIB_DIR "lib") 
     else()
         set(SYS_C_LIB_NAME "libsystemc.so")
@@ -40,7 +40,7 @@ endif()
 # ==========================================
 # Entorno de Pruebas (CTest)
 # ==========================================
-# Habilitamos CTest. Esto te permitirá correr múltiples testbenches
+# Habilitamos CTest. Esto te permitira correr multiples testbenches
 # usando el comando `ctest` desde la carpeta build.
 enable_testing()
 
@@ -62,7 +62,7 @@ add_executable(tb_alu
     ${ALU_SOURCES}
 )
 
-# Enlazamos la librería de SystemC a nuestro ejecutable tb_alu
+# Enlazamos la libreria de SystemC a nuestro ejecutable tb_alu
 target_link_libraries(tb_alu PRIVATE SystemC::systemc)
 
 # Registramos el ejecutable como una prueba
@@ -73,35 +73,35 @@ add_test(NAME Test_ALU COMMAND tb_alu)
 # ==========================================
 add_executable(tb_register
     Registers/main.cpp
-    Registers/Register4Bit.cpp
+    Registers/RegisterA.cpp
     ${ALU_SOURCES}
 )
 target_link_libraries(tb_register PRIVATE SystemC::systemc)
 add_test(NAME Test_Register COMMAND tb_register)
 
 # ==========================================
-# Componente 3: Memoria RAM 16x4
+# Componente 3: Memoria RAM 16x8
 # ==========================================
 add_executable(tb_ram
     Memory/main.cpp
-    Memory/RAM16x4.cpp
+    Memory/RAM16x8.cpp
 )
 target_link_libraries(tb_ram PRIVATE SystemC::systemc)
 add_test(NAME Test_RAM COMMAND tb_ram)
 
 # ==========================================
-# Componente 4: Bus Central y Lógica Tri-State
+# Componente 4: Bus Central y Logica Tri-State
 # ==========================================
 add_executable(tb_bus
     Bus/main.cpp
-    Memory/RAM16x4.cpp
-    Registers/Register4Bit.cpp
+    Memory/RAM16x8.cpp
+    Registers/RegisterA.cpp
 )
 target_link_libraries(tb_bus PRIVATE SystemC::systemc)
 add_test(NAME Test_Bus COMMAND tb_bus)
 
 # ==========================================
-# Componente 5: Registro de Instrucción (IR)
+# Componente 5: Registro de Instruccion (IR)
 # ==========================================
 add_executable(tb_ir
     Control/main.cpp
@@ -131,9 +131,26 @@ target_link_libraries(tb_cu PRIVATE SystemC::systemc)
 add_test(NAME Test_CU COMMAND tb_cu)
 
 # ==========================================
+# Componente 8: Microprocesador Final (Semana 9)
+# ==========================================
+add_executable(microprocessor_final
+    main.cpp
+    ${ALU_SOURCES}
+    Memory/RAM16x8.cpp
+    Memory/MAR.cpp
+    Registers/RegisterA.cpp
+    Registers/RegisterB.cpp
+    Control/ProgramCounter.cpp
+    Control/InstructionRegister.cpp
+    Control/ControlUnit.cpp
+)
+target_link_libraries(microprocessor_final PRIVATE SystemC::systemc)
+add_test(NAME Test_Final COMMAND microprocessor_final)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
-# Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),
+# Cuando tengas mas componentes con su propio Testbench (por ejemplo main.cpp),
 # solo tienes que replicar el bloque anterior:
 
 # add_executable(tb_control_unit ControlUnit/main.cpp ControlUnit/ControlUnit.cpp)

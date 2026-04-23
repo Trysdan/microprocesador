@@ -11,19 +11,24 @@ SC_MODULE(ALU) {
   sc_in<bool> a[4], b[4], opcode[4];
   sc_out<bool> result[4];
   sc_out<bool> cout;
+  
+  // Puertos para Integracion de Bus
+  sc_in<bool> alu_out_en;
+  sc_out<sc_lv<8>> data_out;
 
-  // Señales internas (los cables)
+  // Senales internas (los cables)
   sc_signal<bool> s_arith[4], s_and[4], s_or[4], s_xor[4], s_not[4];
   sc_signal<bool> s_eq[4], s_gt[4], s_lt[4], s_ctrl_arith;
   sc_signal<bool> s_ground; // Para entradas no usadas del Mux
 
-  // Instancias (punteros a objetos, pero puertos conectados por señales)
+  // Instancias (punteros a objetos, pero puertos conectados por senales)
   AdderSub4Bit *arithUnit;
   LogicUnit4Bit *logicUnit;
   ComparatorUnit4Bit *compUnit;
   Mux16to1 *mux;
 
   void process_control();
+  void drive_bus();
 
   SC_CTOR(ALU) {
     arithUnit = new AdderSub4Bit("ArithUnit");
@@ -33,7 +38,7 @@ SC_MODULE(ALU) {
 
     s_ground.write(false);
 
-    // Conexión de entradas
+    // Conexion de entradas
     for (int i = 0; i < 4; i++) {
       arithUnit->a[i](a[i]);
       arithUnit->b[i](b[i]);
@@ -82,6 +87,10 @@ SC_MODULE(ALU) {
     SC_METHOD(process_control);
     for (int i = 0; i < 4; i++)
       sensitive << opcode[i];
+
+    SC_METHOD(drive_bus);
+    sensitive << alu_out_en;
+    for (int i = 0; i < 4; i++) sensitive << result[i];
   }
 };
 

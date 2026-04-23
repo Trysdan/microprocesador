@@ -9,6 +9,6 @@ void LogicUnit4Bit::compute_logic() {
     out_and[i].write(va & vb);
     out_or[i].write(va | vb);
     out_xor[i].write(va ^ vb);
-    out_not_a[i].write(!va); // Operación unaria sobre A
+    out_not_a[i].write(!va); // Operacion unaria sobre A
   }
 }

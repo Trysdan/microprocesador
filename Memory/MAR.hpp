@@ -3,23 +3,14 @@
 
 #include <systemc.h>
 
-// Modulo MAR (Memory Address Register): Captura direcciones del bus para la RAM
 SC_MODULE(MAR) {
     sc_in<bool> clk;
     sc_in<bool> reset;
-    sc_in<bool> mar_load;      // Senal de carga desde el bus
-    sc_in<sc_lv<4>> data_in;   // Entrada desde el Bus Central
-    sc_out<sc_uint<4>> address; // Salida directa a los pines de direccion de la RAM
+    sc_in<bool> mar_load;
+    sc_in<sc_lv<8>> data_in;
+    sc_out<sc_uint<4>> address;
 
-    void process_mar() {
-        if (reset.read() == true) {
-            address.write(0);
-        } else if (clk.event() && clk.read() == true) {
-            if (mar_load.read() == true) {
-                address.write(data_in.read().to_uint());
-            }
-        }
-    }
+    void process_mar();
 
     SC_CTOR(MAR) {
         SC_METHOD(process_mar);

@@ -1,8 +1,25 @@
 #include "ControlUnit.hpp"
 
-void ControlUnit::reset_signals() {
+void ControlUnit::process_state_transition() {
+    if (reset.read() == true) {
+        current_state.write(T1);
+    } else {
+        switch (current_state.read()) {
+            case T1: current_state.write(T2); break;
+            case T2: current_state.write(T3); break;
+            case T3: current_state.write(T4); break;
+            case T4: current_state.write(T5); break;
+            case T5: current_state.write(T6); break;
+            case T6: current_state.write(T1); break;
+        }
+    }
+}
+
+void ControlUnit::process_output_logic() {
+    // Reset de todas las senales (combinacional)
     pc_inc.write(false);
     pc_out.write(false);
+    pc_load.write(false);
     mar_load.write(false);
     ir_load.write(false);
     ir_out.write(false);
@@ -10,77 +27,53 @@ void ControlUnit::reset_signals() {
     ram_write.write(false);
     acc_load.write(false);
     acc_out.write(false);
+    regB_load.write(false);
     alu_out.write(false);
-}
 
-void ControlUnit::process_fsm() {
-    if (reset.read() == true) {
-        current_state.write(T1);
-        reset_signals();
-    } 
-    else if (clk.event() && clk.read() == true) {
-        reset_signals(); // Por defecto todas apagadas al inicio del ciclo
+    State state = current_state.read();
+    sc_uint<4> op = opcode.read();
 
-        switch (current_state.read()) {
-            case T1: // Fetch 1: PC a MAR
-                pc_out.write(true);
+    switch (state) {
+        case T1: // Fetch 1: PC a MAR
+            pc_out.write(true);
+            mar_load.write(true);
+            break;
+
+        case T2: // Fetch 2: PC++
+            pc_inc.write(true);
+            break;
+
+        case T3: // Fetch 3: RAM[MAR] a IR
+            ram_out.write(true);
+            ir_load.write(true);
+            break;
+
+        case T4: // Execute 1
+            if (op == 0x1 || op == 0x2) { // LDA o ADD
+                ir_out.write(true);
                 mar_load.write(true);
-                current_state.write(T2);
-                break;
+            } else if (op == 0xE) { // OUT
+                acc_out.write(true);
+            } else if (op == 0xF) { // HLT
+                // Podriamos bloquear la FSM aqui, pero el testbench ya lo detecta
+            }
+            break;
 
-            case T2: // Fetch 2: PC++
-                pc_inc.write(true);
-                current_state.write(T3);
-                break;
-
-            case T3: // Fetch 3: RAM[MAR] a IR
+        case T5: // Execute 2
+            if (op == 0x1) { // LDA: RAM a ACC
                 ram_out.write(true);
-                ir_load.write(true);
-                current_state.write(T4);
-                break;
+                acc_load.write(true);
+            } else if (op == 0x2) { // ADD: RAM a RegB
+                ram_out.write(true);
+                regB_load.write(true);
+            }
+            break;
 
-            case T4: // Execute 1
-                switch (opcode.read()) {
-                    case 0x1: // LDA: IR[operand] a MAR
-                        ir_out.write(true);
-                        mar_load.write(true);
-                        break;
-                    case 0x2: // ADD: IR[operand] a MAR
-                        ir_out.write(true);
-                        mar_load.write(true);
-                        break;
-                    case 0xE: // OUT: ACC a Bus
-                        acc_out.write(true);
-                        break;
-                    case 0xF: // HLT: Detener (permanecer en T4)
-                        current_state.write(T4); 
-                        return; 
-                }
-                current_state.write(T5);
-                break;
-
-            case T5: // Execute 2
-                switch (opcode.read()) {
-                    case 0x1: // LDA: RAM a ACC
-                        ram_out.write(true);
-                        acc_load.write(true);
-                        break;
-                    case 0x2: // ADD: RAM a Bus (ALU suma internamente)
-                        ram_out.write(true);
-                        break;
-                }
-                current_state.write(T6);
-                break;
-
-            case T6: // Execute 3
-                switch (opcode.read()) {
-                    case 0x2: // ADD: ALU a ACC
-                        alu_out.write(true);
-                        acc_load.write(true);
-                        break;
-                }
-                current_state.write(T1); // Volver a Fetch
-                break;
-        }
+        case T6: // Execute 3
+            if (op == 0x2) { // ADD: ALU a ACC
+                alu_out.write(true);
+                acc_load.write(true);
+            }
+            break;
     }
 }

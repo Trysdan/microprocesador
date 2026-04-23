@@ -8,7 +8,7 @@ SC_MODULE(AdderSub4Bit) {
   sc_in<bool> a[4], b[4], ctrl; // ctrl = 0 (Suma), ctrl = 1 (Resta)
   sc_out<bool> s[4], cout;
 
-  // Señales internas
+  // Senales internas
   sc_signal<bool> b_real[4]; // B corregido (directo o invertido)
   sc_signal<bool> p[4], g[4];
   sc_signal<bool> c_int[4];
@@ -16,7 +16,7 @@ SC_MODULE(AdderSub4Bit) {
   // Procesos
   void compute_inversion(); // Aplica XOR a B
   void compute_pg();        // Genera P y G
-  void compute_carry();     // Lógica CLA
+  void compute_carry();     // Logica CLA
   void compute_sum();       // Genera S
 
   SC_CTOR(AdderSub4Bit) {

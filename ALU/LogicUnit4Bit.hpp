@@ -7,7 +7,7 @@ SC_MODULE(LogicUnit4Bit) {
   // Entradas
   sc_in<bool> a[4], b[4];
 
-  // Salidas: Una para cada operación que el Mux podrá elegir
+  // Salidas: Una para cada operacion que el Mux podra elegir
   sc_out<bool> out_and[4];
   sc_out<bool> out_or[4];
   sc_out<bool> out_xor[4];
