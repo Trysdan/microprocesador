@@ -6,12 +6,12 @@
 // Módulo Adaptador para convertir bool[4] de la ALU estructural a sc_uint<4> del Registro
 SC_MODULE(BusAdapter) {
     sc_in<bool> in_bits[4];
-    sc_out<sc_uint<4>> out_bus;
+    sc_out<sc_lv<4>> out_bus;
 
     void convert() {
-        sc_uint<4> temp = 0;
+        sc_lv<4> temp = "0000";
         for (int i = 0; i < 4; i++) {
-            temp[i] = in_bits[i].read();
+            temp[i] = in_bits[i].read() ? '1' : '0';
         }
         out_bus.write(temp);
     }
@@ -33,9 +33,9 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<bool> alu_cout;
 
     // Señales del Registro y Control
-    sc_signal<bool> reset, load_enable;
-    sc_signal<sc_uint<4>> reg_in_bus; // Cable intermedio (Salida Adaptador -> Entrada Registro)
-    sc_signal<sc_uint<4>> reg_out_bus;
+    sc_signal<bool> reset, load_enable, out_enable;
+    sc_signal<sc_lv<4>> reg_in_bus; // Cable intermedio (Salida Adaptador -> Entrada Registro)
+    sc_signal<sc_lv<4>> reg_out_bus;
 
     // 1. Instancia de la ALU Estructural
     ALU ula("MIP_ALU");
@@ -59,6 +59,7 @@ int sc_main(int argc, char* argv[]) {
     acc.clk(clk);
     acc.reset(reset);
     acc.load_enable(load_enable);
+    acc.out_enable(out_enable);
     acc.data_in(reg_in_bus); // Conectado a la salida del adaptador
     acc.data_out(reg_out_bus);
 
@@ -85,6 +86,7 @@ int sc_main(int argc, char* argv[]) {
     // Inicializacion
     reset.write(true);
     load_enable.write(false);
+    out_enable.write(true); // Siempre habilitado en el testbench original
     set_inputs(0, 0, 0);
     
     std::cout << "\n--- TESTBENCH ACUMULADOR (ALU ESTRUCTURAL + REGISTRO) ---\n";

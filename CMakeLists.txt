@@ -90,6 +90,17 @@ target_link_libraries(tb_ram PRIVATE SystemC::systemc)
 add_test(NAME Test_RAM COMMAND tb_ram)
 
 # ==========================================
+# Componente 4: Bus Central y Lógica Tri-State
+# ==========================================
+add_executable(tb_bus
+    Bus/main.cpp
+    Memory/RAM16x4.cpp
+    Registers/Register4Bit.cpp
+)
+target_link_libraries(tb_bus PRIVATE SystemC::systemc)
+add_test(NAME Test_Bus COMMAND tb_bus)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
 # Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),

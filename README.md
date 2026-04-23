@@ -10,13 +10,14 @@
 ### Overview
 This project is an educational, long-term endeavor to build a complete microprocessor from scratch using **SystemC**. The design approach is incremental, starting from fundamental digital logic components and scaling up to a fully functional processor architecture. 
 
-Currently, the project features a fully functional **Structural RTL 4-bit ALU** (Carry Lookahead Adder, Logic Unit, Comparator, Mux), a **4-bit Synchronous Register** acting as an Accumulator, and a **16x4 RAM Module** (Harvard/Single-Cycle architecture style).
+Currently, the project features a fully functional **Structural RTL 4-bit ALU**, a **4-bit Synchronous Register** acting as an Accumulator, a **16x4 RAM Module**, and a **Central Data Bus** with Tri-State logic (Z) for multi-module communication.
 
 ### Project Structure
 To maintain a clear record of the design evolution, the repository is structured as follows:
 - `ALU/`: Contains the active development files for the Arithmetic Logic Unit and related components (pure structural logic using gate-level boolean equations).
 - `Registers/`: Contains state-holding elements, starting with the `Register4Bit` module (using `sc_uint<4>`) and the Accumulator testbench.
 - `Memory/`: Contains the Random Access Memory structures, starting with the `RAM16x4` module (synchronous write, combinational read).
+- `Bus/`: Central bus integration using `sc_signal_rv<4>` and Tri-State logic.
 - `legacy/`: Serves as an archive for previous versions and iterations of the code. This preserves the history of the design decisions and allows for comparative analysis of optimizations over time.
 
 ### Getting Started (SystemC Setup)
@@ -49,13 +50,14 @@ This project is natively compiled using Linux or the Windows Subsystem for Linux
 ### Descripción General
 Este proyecto es una iniciativa educativa a largo plazo con el objetivo de construir un microprocesador completo desde cero utilizando **SystemC**. El enfoque de diseño es incremental, comenzando con componentes lógicos fundamentales hasta llegar a una arquitectura de procesador totalmente funcional.
 
-Actualmente, el proyecto cuenta con una **ALU Estructural RTL de 4 bits** (Sumador CLA, Unidad Lógica, Comparador, Multiplexor), un **Registro Síncrono de 4 bits** funcionando como Acumulador, y un **Módulo RAM 16x4** con escritura síncrona y lectura asíncrona.
+Actualmente, el proyecto cuenta con una **ALU Estructural RTL de 4 bits**, un **Registro Síncrono de 4 bits** funcionando como Acumulador, un **Módulo RAM 16x4**, y un **Bus de Datos Central** con lógica Tri-State (Z) para comunicación multi-módulo.
 
 ### Estructura del Proyecto
 Para mantener un registro claro de la evolución del diseño, el repositorio se estructura de la siguiente manera:
 - `ALU/`: Contiene los archivos de desarrollo activo para la Unidad Aritmético Lógica y componentes (lógica estructural pura a nivel de compuertas y ecuaciones booleanas).
 - `Registers/`: Contiene los elementos de estado o memoria, comenzando con el módulo `Register4Bit` (usando `sc_uint<4>`) y su testbench de Acumulador.
 - `Memory/`: Aloja las estructuras de memoria de acceso aleatorio, iniciando con la `RAM16x4` (escritura síncrona, lectura combinacional).
+- `Bus/`: Integración del bus central usando `sc_signal_rv<4>` y lógica Tri-State.
 - `legacy/`: Funciona como un archivo para versiones e iteraciones anteriores del código. Esto preserva el historial de las decisiones de diseño y permite un análisis comparativo de las optimizaciones de hardware a lo largo del tiempo.
 
 ### Guía de Inicio (Configuración de SystemC)

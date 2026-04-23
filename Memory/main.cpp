@@ -8,14 +8,16 @@ int sc_main(int argc, char* argv[]) {
 
     // Señales
     sc_signal<bool> write_enable;
+    sc_signal<bool> out_enable;
     sc_signal<sc_uint<4>> address;
     sc_signal<sc_uint<4>> data_in;
-    sc_signal<sc_uint<4>> data_out;
+    sc_signal<sc_lv<4>> data_out;
 
     // Instancia de la Memoria RAM
     RAM16x4 ram("RAM_16x4");
     ram.clk(clk);
     ram.write_enable(write_enable);
+    ram.out_enable(out_enable);
     ram.address(address);
     ram.data_in(data_in);
     ram.data_out(data_out);
@@ -30,6 +32,7 @@ int sc_main(int argc, char* argv[]) {
 
     // Inicialización
     write_enable.write(false);
+    out_enable.write(true); // Siempre habilitado para el test anterior
     address.write(0);
     data_in.write(0);
 
