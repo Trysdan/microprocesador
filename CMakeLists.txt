@@ -101,6 +101,16 @@ target_link_libraries(tb_bus PRIVATE SystemC::systemc)
 add_test(NAME Test_Bus COMMAND tb_bus)
 
 # ==========================================
+# Componente 5: Registro de Instrucción (IR)
+# ==========================================
+add_executable(tb_ir
+    Control/main.cpp
+    Control/InstructionRegister.cpp
+)
+target_link_libraries(tb_ir PRIVATE SystemC::systemc)
+add_test(NAME Test_IR COMMAND tb_ir)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
 # Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),
