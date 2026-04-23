@@ -47,9 +47,8 @@ enable_testing()
 # ==========================================
 # Componente 1: ALU (Testbench actual)
 # ==========================================
-# Agrupamos todos los archivos fuente de la ALU para generar un ejecutable (Testbench)
-add_executable(tb_alu
-    ALU/main.cpp
+# Definimos los archivos fuente de la ALU para reutilizarlos en otros testbenches
+set(ALU_SOURCES
     ALU/ALU.cpp
     ALU/AdderSub4Bit.cpp
     ALU/ComparatorUnit4Bit.cpp
@@ -57,11 +56,28 @@ add_executable(tb_alu
     ALU/Mux16to1.cpp
 )
 
+# Agrupamos todos los archivos fuente de la ALU para generar un ejecutable (Testbench)
+add_executable(tb_alu
+    ALU/main.cpp
+    ${ALU_SOURCES}
+)
+
 # Enlazamos la librería de SystemC a nuestro ejecutable tb_alu
 target_link_libraries(tb_alu PRIVATE SystemC::systemc)
 
 # Registramos el ejecutable como una prueba
 add_test(NAME Test_ALU COMMAND tb_alu)
+
+# ==========================================
+# Componente 2: Registro (Acumulador)
+# ==========================================
+add_executable(tb_register
+    Registers/main.cpp
+    Registers/Register4Bit.cpp
+    ${ALU_SOURCES}
+)
+target_link_libraries(tb_register PRIVATE SystemC::systemc)
+add_test(NAME Test_Register COMMAND tb_register)
 
 # ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
