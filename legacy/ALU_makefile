@@ -1,0 +1,39 @@
+SYSTEMC_HOME = /usr/local/systemc
+INCDIR = -I$(SYSTEMC_HOME)/include
+LIBDIR = -L$(SYSTEMC_HOME)/lib
+LIBS = -lsystemc
+
+# Detecta automáticamente todos los archivos .cpp del directorio
+SRCS = $(wildcard *.cpp)
+# Genera la lista de .o basada en los .cpp encontrados
+OBJS = $(SRCS:.cpp=.o)
+
+# Nombre del ejecutable
+TARGET = sumador
+
+# Regla principal: Compila, ejecuta y luego limpia los .o
+all: $(TARGET)
+	$(MAKE) clean_objs
+	./$(TARGET)
+
+# Enlace del ejecutable
+$(TARGET): $(OBJS)
+	g++ $(INCDIR) $(LIBDIR) $(OBJS) $(LIBS) -o $(TARGET)
+
+# Compilación de objetos (busca automáticamente dependencias en .hpp y .cpp)
+%.o: %.cpp %.hpp
+	g++ -c $(INCDIR) $< -o $@
+
+# Regla especial para compilar el main.cpp (que usualmente no tiene un main.hpp)
+main.o: main.cpp
+	g++ -c $(INCDIR) $< -o $@
+
+# Elimina solo los archivos objeto
+clean_objs:
+	rm -f $(OBJS)
+
+# Elimina objetos y el ejecutable
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+.PHONY: all clean clean_objs

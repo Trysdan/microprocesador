@@ -20,44 +20,24 @@ To maintain a clear record of the design evolution, the repository is structured
 ### Getting Started (SystemC Setup)
 Since SystemC is a C++ library, you need a C++ compiler and the SystemC library installed.
 
-#### Linux (Ubuntu/Debian)
+#### Linux / WSL (Ubuntu/Debian)
+This project is natively compiled using Linux or the Windows Subsystem for Linux (WSL).
+
 1. **Install dependencies:**
    ```bash
    sudo apt update
    sudo apt install build-essential cmake
    ```
 2. **Install SystemC:**
-   You can download the source from [Accellera](https://www.accellera.org/downloads/standards/systemc) and compile it, or install a pre-compiled version if available in your distro:
+   Ensure you have SystemC installed (for example, in `/usr/local/systemc`). Set the environment variable:
    ```bash
-   sudo apt install libsystemc-dev
+   export SYSTEMC_HOME=/usr/local/systemc
    ```
 3. **Compile and Run:**
-   Assuming you have a `CMakeLists.txt` or a simple `Makefile` setup:
+   You can use the provided bash script to automatically build and run all testbenches with a single command:
    ```bash
-   mkdir build && cd build
-   cmake ..
-   make
-   ./microprocessor_sim
+   ./run_tests.sh
    ```
-
-#### Windows
-Setting up SystemC on Windows can be done via MSYS2/MinGW or Visual Studio.
-**Using MSYS2 (MinGW-w64) [Recommended for simplicity]:**
-1. Download and install [MSYS2](https://www.msys2.org/).
-2. Open the MSYS2 UCRT64 terminal and install the GCC toolchain and CMake:
-   ```bash
-   pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake make
-   ```
-3. Download the SystemC source code from [Accellera](https://www.accellera.org/downloads/standards/systemc).
-4. Extract the source, navigate to the folder in the terminal, and compile SystemC using CMake:
-   ```bash
-   mkdir build && cd build
-   cmake .. -DCMAKE_CXX_STANDARD=14
-   make
-   make install
-   ```
-5. Set the `SYSTEMC_HOME` environment variable to your compiled SystemC directory.
-6. Compile the project using CMake similarly to Linux.
 
 ---
 
@@ -77,41 +57,21 @@ Para mantener un registro claro de la evolución del diseño, el repositorio se 
 ### Guía de Inicio (Configuración de SystemC)
 Dado que SystemC es una biblioteca de C++, es necesario contar con un compilador de C++ y la biblioteca instalada.
 
-#### Linux (Ubuntu/Debian)
+#### Linux / WSL (Ubuntu/Debian)
+Este proyecto está configurado para compilarse nativamente en entornos Linux o en el Subsistema de Windows para Linux (WSL).
+
 1. **Instalar dependencias:**
    ```bash
    sudo apt update
    sudo apt install build-essential cmake
    ```
 2. **Instalar SystemC:**
-   Puedes descargar el código fuente desde [Accellera](https://www.accellera.org/downloads/standards/systemc) y compilarlo, o instalar una versión precompilada si tu distribución lo permite:
+   Asegúrate de tener SystemC instalado (por ejemplo, en `/usr/local/systemc`). Configura la variable de entorno:
    ```bash
-   sudo apt install libsystemc-dev
+   export SYSTEMC_HOME=/usr/local/systemc
    ```
 3. **Compilar y Ejecutar:**
-   Asumiendo que cuentas con un `CMakeLists.txt` o un `Makefile`:
+   Puedes usar el script en bash incluido para compilar automáticamente y ejecutar todas las pruebas con un solo comando:
    ```bash
-   mkdir build && cd build
-   cmake ..
-   make
-   ./microprocessor_sim
+   ./run_tests.sh
    ```
-
-#### Windows
-La configuración de SystemC en Windows puede realizarse mediante MSYS2/MinGW o Visual Studio.
-**Usando MSYS2 (MinGW-w64) [Recomendado por simplicidad]:**
-1. Descarga e instala [MSYS2](https://www.msys2.org/).
-2. Abre la terminal MSYS2 UCRT64 e instala la cadena de herramientas GCC y CMake:
-   ```bash
-   pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake make
-   ```
-3. Descarga el código fuente de SystemC desde [Accellera](https://www.accellera.org/downloads/standards/systemc).
-4. Extrae el código, navega a la carpeta en la terminal y compila SystemC usando CMake:
-   ```bash
-   mkdir build && cd build
-   cmake .. -DCMAKE_CXX_STANDARD=14
-   make
-   make install
-   ```
-5. Configura la variable de entorno `SYSTEMC_HOME` apuntando al directorio donde instalaste SystemC.
-6. Compila el proyecto utilizando CMake de manera similar a Linux.
