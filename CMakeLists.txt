@@ -111,6 +111,16 @@ target_link_libraries(tb_ir PRIVATE SystemC::systemc)
 add_test(NAME Test_IR COMMAND tb_ir)
 
 # ==========================================
+# Componente 6: Program Counter (PC)
+# ==========================================
+add_executable(tb_pc
+    Control/main_pc.cpp
+    Control/ProgramCounter.cpp
+)
+target_link_libraries(tb_pc PRIVATE SystemC::systemc)
+add_test(NAME Test_PC COMMAND tb_pc)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
 # Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),
