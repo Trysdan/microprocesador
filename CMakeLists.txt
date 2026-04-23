@@ -80,6 +80,16 @@ target_link_libraries(tb_register PRIVATE SystemC::systemc)
 add_test(NAME Test_Register COMMAND tb_register)
 
 # ==========================================
+# Componente 3: Memoria RAM 16x4
+# ==========================================
+add_executable(tb_ram
+    Memory/main.cpp
+    Memory/RAM16x4.cpp
+)
+target_link_libraries(tb_ram PRIVATE SystemC::systemc)
+add_test(NAME Test_RAM COMMAND tb_ram)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
 # Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),
