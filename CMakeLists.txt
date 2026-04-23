@@ -121,6 +121,16 @@ target_link_libraries(tb_pc PRIVATE SystemC::systemc)
 add_test(NAME Test_PC COMMAND tb_pc)
 
 # ==========================================
+# Componente 7: Unidad de Control (CU)
+# ==========================================
+add_executable(tb_cu
+    Control/main_cu.cpp
+    Control/ControlUnit.cpp
+)
+target_link_libraries(tb_cu PRIVATE SystemC::systemc)
+add_test(NAME Test_CU COMMAND tb_cu)
+
+# ==========================================
 # Componente Futuro: Unidad de Control (Ejemplo)
 # ==========================================
 # Cuando tengas más componentes con su propio Testbench (por ejemplo main.cpp),
