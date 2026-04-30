@@ -12,7 +12,8 @@ This project is an educational, long-term endeavor to build a complete microproc
 
 Currently, the project features a fully functional **Structural RTL 4-bit ALU** (with Zero Flag), a **RegisterA** acting as an Accumulator, a **16x8 RAM Module**, a **Central Data Bus (8-bit)** with Tri-State logic, an **Instruction Register (IR)**, a **Program Counter (PC)**, a **Control Unit (CU)** with an integrated **FSM**, and a dedicated **Output Register** for hardware-to-console feedback.
 
-The processor now supports a complete set of instructions: **LDA, ADD, SUB, JMP, JZ, AND, OR, XOR, NOT, EQL, GRT, OUT, and HLT**.
+The processor now supports a complete set of instructions: **LDA, ADD, SUB, JMP, JZ, AND, OR, XOR, NOT, EQL, GRT, IF, OUT, and HLT**.
+
 
 
 ### Documentation
@@ -61,7 +62,8 @@ Este proyecto es una iniciativa educativa a largo plazo con el objetivo de const
 
 Actualmente, el proyecto cuenta con una **ALU Estructural RTL de 4 bits** (con bandera de Cero), un **RegisterA** funcionando como Acumulador, un **Modulo RAM 16x8**, un **Bus de Datos Central (8-bit)** con logica Tri-State (Z), un **Registro de Instruccion (IR)**, un **Contador de Programa (PC)**, una **Unidad de Control (CU)** con una **FSM** integrada, y un **Registro de Salida (Output Register)** para visualizacion en consola.
 
-El procesador soporta ahora un conjunto completo de instrucciones: **LDA, ADD, SUB, JMP, JZ, AND, OR, XOR, NOT, EQL, GRT, OUT y HLT**.
+El procesador soporta ahora un conjunto completo de instrucciones: **LDA, ADD, SUB, JMP, JZ, AND, OR, XOR, NOT, EQL, GRT, IF, OUT y HLT**.
+
 
 
 ### Documentacion Detallada

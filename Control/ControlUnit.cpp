@@ -64,7 +64,15 @@ void ControlUnit::process_output_logic() {
                 } else {
                     pc_inc.write(true);
                 }
+            } else if (op == 0xC) { // IF (Jump if Not Zero / True)
+                if (zero_flag.read() == false) {
+                    ir_out.write(true);
+                    pc_load.write(true);
+                } else {
+                    pc_inc.write(true);
+                }
             } else if (op == 0x9) { // NOT (Inmediato sobre ACC)
+
                 alu_out.write(true);
                 acc_load.write(true);
             } else if (op == 0xE) { // OUT

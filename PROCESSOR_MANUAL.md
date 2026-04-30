@@ -33,7 +33,9 @@ El procesador soporta las siguientes instrucciones empaquetadas en un byte `[OpC
 | **NOT** | `0x9` | **Bitwise NOT**: ACC = ~ACC (Operando ignorado). |
 | **EQL** | `0xA` | **Equal**: ACC = (ACC == RAM[Operando]) ? 1 : 0. |
 | **GRT** | `0xB` | **Greater Than**: ACC = (ACC > RAM[Operando]) ? 1 : 0. |
+| **IF**  | `0xC` | **If / Jump True**: Salta a la direccion si ACC != 0 (Verdadero). |
 | **OUT** | `0xE` | **Output**: Muestra el valor del Acumulador en el Registro de Salida. |
+
 | **HLT** | `0xF` | **Halt**: Detiene la ejecucion del programa. |
 
 

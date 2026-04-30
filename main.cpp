@@ -19,8 +19,10 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
         {"LDA", 0x1}, {"ADD", 0x2}, {"JMP", 0x3},
         {"JZ",  0x4}, {"SUB", 0x5}, {"AND", 0x6},
         {"OR",  0x7}, {"XOR", 0x8}, {"NOT", 0x9},
-        {"EQL", 0xA}, {"GRT", 0xB}, {"OUT", 0xE}, {"HLT", 0xF}
+        {"EQL", 0xA}, {"GRT", 0xB}, {"IF",  0xC},
+        {"OUT", 0xE}, {"HLT", 0xF}
     };
+
 
 
     std::string line;
