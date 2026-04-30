@@ -17,8 +17,11 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
 
     std::map<std::string, uint8_t> opcodes = {
         {"LDA", 0x1}, {"ADD", 0x2}, {"JMP", 0x3},
-        {"JZ",  0x4}, {"SUB", 0x5}, {"OUT", 0xE}, {"HLT", 0xF}
+        {"JZ",  0x4}, {"SUB", 0x5}, {"AND", 0x6},
+        {"OR",  0x7}, {"XOR", 0x8}, {"NOT", 0x9},
+        {"EQL", 0xA}, {"GRT", 0xB}, {"OUT", 0xE}, {"HLT", 0xF}
     };
+
 
     std::string line;
     int address = 0;
@@ -34,9 +37,10 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
         ss >> mnemonic;
         if (opcodes.find(mnemonic) != opcodes.end()) {
             uint8_t op = opcodes[mnemonic];
-            if (mnemonic != "OUT" && mnemonic != "HLT") {
+            if (mnemonic != "OUT" && mnemonic != "HLT" && mnemonic != "NOT") {
                 ss >> operand;
             }
+
             
             uint8_t instruction = (op << 4) | (operand & 0x0F);
             ram->mem[address].write(instruction);

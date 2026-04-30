@@ -1,20 +1,30 @@
 #include "ComparatorUnit4Bit.hpp"
 
 void ComparatorUnit4Bit::compute_comparison() {
-  // 1. Convertimos los bits individuales a un valor entero para comparar
-  sc_uint<4> val_a, val_b;
+  bool bit_a[4], bit_b[4];
   for (int i = 0; i < 4; i++) {
-    val_a[i] = a[i].read();
-    val_b[i] = b[i].read();
+    bit_a[i] = a[i].read();
+    bit_b[i] = b[i].read();
   }
 
-  // 2. Evaluamos las condiciones
-  bool eq = (val_a == val_b);
-  bool gt = (val_a > val_b);
-  bool lt = (val_a < val_b);
+  // 1. Igualdad (EQ): EQ = (A3^B3)' & (A2^B2)' & (A1^B1)' & (A0^B0)'
+  bool x[4]; // x_i = (Ai ^ Bi)' -> Ai == Bi
+  for (int i = 0; i < 4; i++) {
+    x[i] = !(bit_a[i] ^ bit_b[i]);
+  }
+  bool eq = x[3] & x[2] & x[1] & x[0];
 
-  // 3. Escribimos en las salidas de 4 bits
-  // El bit 0 contendra el resultado, los bits 1, 2 y 3 seran siempre 0
+  // 2. Mayor que (GT): Magnitud bit a bit
+  // GT = A3 B3' + x3 A2 B2' + x3 x2 A1 B1' + x3 x2 x1 A0 B0'
+  bool gt = (bit_a[3] & !bit_b[3]) |
+            (x[3] & bit_a[2] & !bit_b[2]) |
+            (x[3] & x[2] & bit_a[1] & !bit_b[1]) |
+            (x[3] & x[2] & x[1] & bit_a[0] & !bit_b[0]);
+
+  // 3. Menor que (LT): LT = !(GT | EQ)
+  bool lt = !(gt | eq);
+
+  // 4. Escribimos en las salidas (el bus espera 4 bits, ponemos el resultado en bit 0)
   for (int i = 0; i < 4; i++) {
     if (i == 0) {
       out_equal[i].write(eq);

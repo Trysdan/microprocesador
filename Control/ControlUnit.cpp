@@ -50,12 +50,13 @@ void ControlUnit::process_output_logic() {
             break;
 
         case T4: // Execute 1
-            if (op == 0x1 || op == 0x2 || op == 0x5) { // LDA, ADD o SUB
+            if (op == 0x1 || op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
+                // LDA, ADD, SUB, AND, OR, XOR, EQL, GRT
                 ir_out.write(true);
                 mar_load.write(true);
             } else if (op == 0x3) { // JMP
-                ir_out.write(true); // Poner operando en el bus
-                pc_load.write(true); // Cargar PC desde el bus
+                ir_out.write(true); 
+                pc_load.write(true); 
             } else if (op == 0x4) { // JZ
                 if (zero_flag.read() == true) {
                     ir_out.write(true);
@@ -63,27 +64,35 @@ void ControlUnit::process_output_logic() {
                 } else {
                     pc_inc.write(true);
                 }
+            } else if (op == 0x9) { // NOT (Inmediato sobre ACC)
+                alu_out.write(true);
+                acc_load.write(true);
             } else if (op == 0xE) { // OUT
                 acc_out.write(true);
                 out_load.write(true);
             }
             break;
 
+
         case T5: // Execute 2
             if (op == 0x1) { // LDA: RAM a ACC
                 ram_out.write(true);
                 acc_load.write(true);
-            } else if (op == 0x2 || op == 0x5) { // ADD o SUB: RAM a RegB
+            } else if (op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
+                // ADD, SUB, AND, OR, XOR, EQL, GRT: RAM a RegB
                 ram_out.write(true);
                 regB_load.write(true);
             }
             break;
 
+
         case T6: // Execute 3
-            if (op == 0x2 || op == 0x5) { // ADD o SUB: ALU a ACC
+            if (op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
+                // Operaciones ALU a ACC
                 alu_out.write(true);
                 acc_load.write(true);
             }
             break;
+
     }
 }

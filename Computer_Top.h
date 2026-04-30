@@ -107,14 +107,14 @@ SC_MODULE(Computer_Top) {
 void Computer_Top::alu_glue_logic() {
     sc_uint<4> a_val = regA->internal_data.read();
     sc_uint<4> b_val = regB_val.read();
+    sc_uint<4> op = opcode_ir.read();
     
     for(int i=0; i<4; i++) {
         alu_a[i].write(a_val[i]);
         alu_b[i].write(b_val[i]);
-        // Si la instruccion es SUB (0x5), configuramos la ALU para restar (opcode 0001)
-        if (opcode_ir.read() == 0x5 && i == 0) alu_op[i].write(true);
-        else alu_op[i].write(false);
+        alu_op[i].write(op[i]);
     }
 }
+
 
 #endif

@@ -61,30 +61,31 @@ SC_MODULE(ALU) {
     arithUnit->ctrl(s_ctrl_arith);
     arithUnit->cout(cout);
 
-    // Mapeo del Mux (Soldando cables)
+    // Mapeo del Mux (Sincronizado con OpCodes del ISA)
     for (int i = 0; i < 4; i++) {
       mux->sel[i](opcode[i]);
       mux->out[i](result[i]);
 
-      mux->in[0][i](s_arith[i]); // Suma
-      mux->in[1][i](s_arith[i]); // Resta
-      mux->in[4][i](s_and[i]);
-      mux->in[5][i](s_or[i]);
-      mux->in[6][i](s_xor[i]);
-      mux->in[7][i](s_not[i]);
-      mux->in[10][i](s_eq[i]);
-      mux->in[11][i](s_gt[i]);
-      mux->in[12][i](s_lt[i]);
+      mux->in[2][i](s_arith[i]); // ADD (OpCode 0x2)
+      mux->in[5][i](s_arith[i]); // SUB (OpCode 0x5)
+      mux->in[6][i](s_and[i]);   // AND (OpCode 0x6)
+      mux->in[7][i](s_or[i]);    // OR  (OpCode 0x7)
+      mux->in[8][i](s_xor[i]);   // XOR (OpCode 0x8)
+      mux->in[9][i](s_not[i]);   // NOT (OpCode 0x9)
+      mux->in[10][i](s_eq[i]);   // EQL (OpCode 0xA)
+      mux->in[11][i](s_gt[i]);   // GRT (OpCode 0xB)
+      mux->in[12][i](s_lt[i]);   // LSS (OpCode 0xC - reservado)
 
-      // IMPORTANTE: Conectar entradas no usadas para evitar warnings
-      mux->in[2][i](s_ground);
+      // Conectar entradas no usadas
+      mux->in[0][i](s_ground);
+      mux->in[1][i](s_ground);
       mux->in[3][i](s_ground);
-      mux->in[8][i](s_ground);
-      mux->in[9][i](s_ground);
+      mux->in[4][i](s_ground);
       mux->in[13][i](s_ground);
       mux->in[14][i](s_ground);
       mux->in[15][i](s_ground);
     }
+
 
     SC_METHOD(process_control);
     for (int i = 0; i < 4; i++)

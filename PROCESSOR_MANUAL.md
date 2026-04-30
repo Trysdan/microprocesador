@@ -11,7 +11,8 @@ Este documento detalla la arquitectura, el conjunto de instrucciones y el flujo 
   - `RegisterA` (Acumulador principal).
   - `RegisterB` (Buffer para la ALU).
   - `OutputRegister` (Registro de salida con feedback en consola).
-- **ALU**: Estructural de 4 bits con soporte para Suma y Resta, incluyendo bandera de Cero (Zero Flag).
+- **ALU**: Estructural de 4 bits con soporte para Suma, Resta, Logica (AND, OR, XOR, NOT) y Comparacion (EQ, GT, LT). Implementada totalmente a nivel de puertas logicas, incluyendo bandera de Cero (Zero Flag).
+
 
 ---
 
@@ -26,8 +27,15 @@ El procesador soporta las siguientes instrucciones empaquetadas en un byte `[OpC
 | **JMP** | `0x3` | **Jump**: Salto incondicional a la direccion indicada por el Operando. |
 | **JZ** | `0x4` | **Jump if Zero**: Salta si la bandera de cero esta activa. |
 | **SUB** | `0x5` | **Subtract**: Resta RAM[Operando] al valor del Acumulador. |
+| **AND** | `0x6` | **Bitwise AND**: ACC = ACC & RAM[Operando]. |
+| **OR**  | `0x7` | **Bitwise OR**: ACC = ACC | RAM[Operando]. |
+| **XOR** | `0x8` | **Bitwise XOR**: ACC = ACC ^ RAM[Operando]. |
+| **NOT** | `0x9` | **Bitwise NOT**: ACC = ~ACC (Operando ignorado). |
+| **EQL** | `0xA` | **Equal**: ACC = (ACC == RAM[Operando]) ? 1 : 0. |
+| **GRT** | `0xB` | **Greater Than**: ACC = (ACC > RAM[Operando]) ? 1 : 0. |
 | **OUT** | `0xE` | **Output**: Muestra el valor del Acumulador en el Registro de Salida. |
 | **HLT** | `0xF` | **Halt**: Detiene la ejecucion del programa. |
+
 
 ---
 
