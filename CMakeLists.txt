@@ -141,11 +141,28 @@ add_executable(tb_jump
     Control/ProgramCounter.cpp
     Control/InstructionRegister.cpp
     Control/ControlUnit.cpp
+    Registers/OutputRegister.cpp
 )
 target_link_libraries(tb_jump PRIVATE SystemC::systemc)
 add_test(NAME Test_Jump COMMAND tb_jump)
 
-# Componente 9: Microprocesador Final (Semana 9)
+# Componente 9: Testbench de Registro de Salida (OUT)
+add_executable(tb_output
+    Registers/main_output.cpp
+    ${ALU_SOURCES}
+    Memory/RAM16x8.cpp
+    Memory/MAR.cpp
+    Registers/RegisterA.cpp
+    Registers/RegisterB.cpp
+    Registers/OutputRegister.cpp
+    Control/ProgramCounter.cpp
+    Control/InstructionRegister.cpp
+    Control/ControlUnit.cpp
+)
+target_link_libraries(tb_output PRIVATE SystemC::systemc)
+add_test(NAME Test_Output COMMAND tb_output)
+
+# Componente 10: Microprocesador Final (Semana 9)
 # ==========================================
 add_executable(microprocessor_final
     main.cpp
@@ -157,6 +174,7 @@ add_executable(microprocessor_final
     Control/ProgramCounter.cpp
     Control/InstructionRegister.cpp
     Control/ControlUnit.cpp
+    Registers/OutputRegister.cpp
 )
 target_link_libraries(microprocessor_final PRIVATE SystemC::systemc)
 add_test(NAME Test_Final COMMAND microprocessor_final)

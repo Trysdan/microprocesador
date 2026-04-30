@@ -19,6 +19,7 @@ int sc_main(int argc, char* argv[]) {
     sc_signal<bool> acc_load, acc_out;
     sc_signal<bool> regB_load;
     sc_signal<bool> alu_out;
+    sc_signal<bool> out_load;
 
     // Instancia de la CU
     ControlUnit cu("CU");
@@ -38,6 +39,7 @@ int sc_main(int argc, char* argv[]) {
     cu.acc_out(acc_out);
     cu.regB_load(regB_load);
     cu.alu_out(alu_out);
+    cu.out_load(out_load);
 
     // Trazado de ondas
     sc_trace_file *wf = sc_create_vcd_trace_file("cu_waves");

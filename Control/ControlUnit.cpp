@@ -29,6 +29,7 @@ void ControlUnit::process_output_logic() {
     acc_out.write(false);
     regB_load.write(false);
     alu_out.write(false);
+    out_load.write(false);
 
     State state = current_state.read();
     sc_uint<4> op = opcode.read();
@@ -53,20 +54,23 @@ void ControlUnit::process_output_logic() {
                 ir_out.write(true);
                 mar_load.write(true);
             } else if (op == 0x3) { // JMP
-                pc_load.write(true);
+                ir_out.write(true); // Poner operando en el bus
+                pc_load.write(true); // Cargar PC desde el bus
             } else if (op == 0x4) { // JZ
                 if (zero_flag.read() == true) {
+                    ir_out.write(true);
                     pc_load.write(true);
                 } else {
                     pc_inc.write(true);
                 }
             } else if (op == 0xE) { // OUT
                 acc_out.write(true);
+                out_load.write(true);
             }
             break;
 
         case T5: // Execute 2
-            if (op == 0x1) { // LDA
+            if (op == 0x1) { // LDA: RAM a ACC
                 ram_out.write(true);
                 acc_load.write(true);
             } else if (op == 0x2 || op == 0x5) { // ADD o SUB: RAM a RegB

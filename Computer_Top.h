@@ -10,6 +10,7 @@
 #include "Control/InstructionRegister.hpp"
 #include "Control/ProgramCounter.hpp"
 #include "Control/ControlUnit.hpp"
+#include "Registers/OutputRegister.hpp"
 
 SC_MODULE(Computer_Top) {
     sc_in<bool> clk;
@@ -25,6 +26,7 @@ SC_MODULE(Computer_Top) {
     sc_signal<bool> acc_load, acc_out;
     sc_signal<bool> regB_load;
     sc_signal<bool> alu_out;
+    sc_signal<bool> out_load;
 
     // Senales de Datos Internas
     sc_signal<sc_uint<4>> ram_addr;
@@ -44,6 +46,7 @@ SC_MODULE(Computer_Top) {
     ALU *alu;
     RegisterA *regA;
     RegisterB *regB;
+    OutputRegister *out_reg;
 
     void alu_glue_logic();
 
@@ -72,7 +75,7 @@ SC_MODULE(Computer_Top) {
         cu->mar_load(mar_load); cu->ir_load(ir_load); cu->ir_out(ir_out); 
         cu->ram_out(ram_out); cu->ram_write(ram_we); cu->acc_load(acc_load); 
         cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
-        cu->zero_flag(alu_zero);
+        cu->zero_flag(alu_zero); cu->out_load(out_load);
         
         pc_load.write(false);
 
@@ -83,6 +86,10 @@ SC_MODULE(Computer_Top) {
         regB = new RegisterB("RegB");
         regB->clk(clk); regB->reset(reset); regB->load_enable(regB_load);
         regB->data_in(central_bus); regB->data_out(regB_val);
+
+        out_reg = new OutputRegister("OutReg");
+        out_reg->clk(clk); out_reg->reset(reset); out_reg->out_load(out_load);
+        out_reg->data_in(central_bus);
 
         alu = new ALU("ALU");
         for(int i=0; i<4; i++) {
