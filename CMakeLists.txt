@@ -130,8 +130,22 @@ add_executable(tb_cu
 target_link_libraries(tb_cu PRIVATE SystemC::systemc)
 add_test(NAME Test_CU COMMAND tb_cu)
 
-# ==========================================
-# Componente 8: Microprocesador Final (Semana 9)
+# Componente 8: Testbench de Saltos (JMP y JZ)
+add_executable(tb_jump
+    Control/main_jump.cpp
+    ${ALU_SOURCES}
+    Memory/RAM16x8.cpp
+    Memory/MAR.cpp
+    Registers/RegisterA.cpp
+    Registers/RegisterB.cpp
+    Control/ProgramCounter.cpp
+    Control/InstructionRegister.cpp
+    Control/ControlUnit.cpp
+)
+target_link_libraries(tb_jump PRIVATE SystemC::systemc)
+add_test(NAME Test_Jump COMMAND tb_jump)
+
+# Componente 9: Microprocesador Final (Semana 9)
 # ==========================================
 add_executable(microprocessor_final
     main.cpp

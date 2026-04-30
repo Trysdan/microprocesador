@@ -9,6 +9,7 @@ int sc_main(int argc, char* argv[]) {
     // Senales de entrada
     sc_signal<bool> reset;
     sc_signal<sc_uint<4>> opcode;
+    sc_signal<bool> zero_flag;
 
     // Senales de salida (Control)
     sc_signal<bool> pc_inc, pc_out, pc_load;
@@ -24,6 +25,7 @@ int sc_main(int argc, char* argv[]) {
     cu.clk(clk);
     cu.reset(reset);
     cu.opcode(opcode);
+    cu.zero_flag(zero_flag);
     cu.pc_inc(pc_inc);
     cu.pc_out(pc_out);
     cu.pc_load(pc_load);
@@ -54,6 +56,7 @@ int sc_main(int argc, char* argv[]) {
     // 1. Reset
     reset.write(true);
     opcode.write(0);
+    zero_flag.write(false);
     sc_start(15, SC_NS);
     reset.write(false);
 

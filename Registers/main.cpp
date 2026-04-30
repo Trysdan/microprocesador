@@ -32,6 +32,7 @@ int sc_main(int argc, char* argv[]) {
     // Senales de la ALU (Estructural)
     sc_signal<bool> alu_a[4], alu_b[4], alu_op[4], alu_res[4];
     sc_signal<bool> alu_cout;
+    sc_signal<bool> alu_zero;
 
     // Senales del Registro y Control
     sc_signal<bool> reg_rst, reg_le, reg_oe;
@@ -46,6 +47,8 @@ int sc_main(int argc, char* argv[]) {
         alu.result[i](alu_res[i]);
     }
     alu.cout(alu_cout);
+    alu.zero(alu_zero);
+    
     // Para este testbench antiguo, no usamos el puerto data_out de la ALU integrada
     sc_signal<bool> alu_oe_dummy;
     sc_signal<sc_lv<8>> alu_bus_dummy;

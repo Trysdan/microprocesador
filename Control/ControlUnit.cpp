@@ -49,28 +49,34 @@ void ControlUnit::process_output_logic() {
             break;
 
         case T4: // Execute 1
-            if (op == 0x1 || op == 0x2) { // LDA o ADD
+            if (op == 0x1 || op == 0x2 || op == 0x5) { // LDA, ADD o SUB
                 ir_out.write(true);
                 mar_load.write(true);
+            } else if (op == 0x3) { // JMP
+                pc_load.write(true);
+            } else if (op == 0x4) { // JZ
+                if (zero_flag.read() == true) {
+                    pc_load.write(true);
+                } else {
+                    pc_inc.write(true);
+                }
             } else if (op == 0xE) { // OUT
                 acc_out.write(true);
-            } else if (op == 0xF) { // HLT
-                // Podriamos bloquear la FSM aqui, pero el testbench ya lo detecta
             }
             break;
 
         case T5: // Execute 2
-            if (op == 0x1) { // LDA: RAM a ACC
+            if (op == 0x1) { // LDA
                 ram_out.write(true);
                 acc_load.write(true);
-            } else if (op == 0x2) { // ADD: RAM a RegB
+            } else if (op == 0x2 || op == 0x5) { // ADD o SUB: RAM a RegB
                 ram_out.write(true);
                 regB_load.write(true);
             }
             break;
 
         case T6: // Execute 3
-            if (op == 0x2) { // ADD: ALU a ACC
+            if (op == 0x2 || op == 0x5) { // ADD o SUB: ALU a ACC
                 alu_out.write(true);
                 acc_load.write(true);
             }

@@ -11,6 +11,7 @@ SC_MODULE(ALU) {
   sc_in<bool> a[4], b[4], opcode[4];
   sc_out<bool> result[4];
   sc_out<bool> cout;
+  sc_out<bool> zero; // Flag de cero
   
   // Puertos para Integracion de Bus
   sc_in<bool> alu_out_en;
@@ -29,6 +30,7 @@ SC_MODULE(ALU) {
 
   void process_control();
   void drive_bus();
+  void drive_zero(); // Proceso para la bandera de cero
 
   SC_CTOR(ALU) {
     arithUnit = new AdderSub4Bit("ArithUnit");
@@ -90,6 +92,9 @@ SC_MODULE(ALU) {
 
     SC_METHOD(drive_bus);
     sensitive << alu_out_en;
+    for (int i = 0; i < 4; i++) sensitive << result[i];
+
+    SC_METHOD(drive_zero);
     for (int i = 0; i < 4; i++) sensitive << result[i];
   }
 };

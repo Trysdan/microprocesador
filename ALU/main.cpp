@@ -9,6 +9,7 @@ int sc_main(int argc, char *argv[]) {
   // Senales de salida
   sc_signal<bool> res[4];
   sc_signal<bool> cout;
+  sc_signal<bool> zero;
   sc_signal<bool> alu_out_en;
   sc_signal<sc_lv<8>> bus_out;
 
@@ -23,6 +24,7 @@ int sc_main(int argc, char *argv[]) {
     alu.result[i](res[i]);
   }
   alu.cout(cout);
+  alu.zero(zero);
   alu.alu_out_en(alu_out_en);
   alu.data_out(bus_out);
 
@@ -45,7 +47,14 @@ int sc_main(int argc, char *argv[]) {
   set_val(b, 4);  // 0100
   set_val(opcode, 1); // 0001 = Resta
   sc_start(10, SC_NS);
-  std::cout << "10 - 4 = " << (res[3].read() << 3 | res[2].read() << 2 | res[1].read() << 1 | res[0].read()) << "\n";
+  std::cout << "10 - 4 = " << (res[3].read() << 3 | res[2].read() << 2 | res[1].read() << 1 | res[0].read()) << " (Zero: " << zero.read() << ")\n";
+
+  // CASO 3: RESTA 5 - 5 (Forzar Zero)
+  set_val(a, 5);
+  set_val(b, 5);
+  set_val(opcode, 1);
+  sc_start(10, SC_NS);
+  std::cout << "5 - 5 = " << (res[3].read() << 3 | res[2].read() << 2 | res[1].read() << 1 | res[0].read()) << " (Zero: " << zero.read() << ")\n";
 
   std::cout << "\nSimulacion finalizada.\n";
   return 0;

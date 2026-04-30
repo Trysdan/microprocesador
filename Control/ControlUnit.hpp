@@ -7,6 +7,7 @@ SC_MODULE(ControlUnit) {
     sc_in<bool> clk;
     sc_in<bool> reset;
     sc_in<sc_uint<4>> opcode;
+    sc_in<bool> zero_flag;    // Nueva entrada de bandera
 
     sc_out<bool> pc_inc, pc_out, pc_load;
     sc_out<bool> mar_load;

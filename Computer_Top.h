@@ -34,6 +34,7 @@ SC_MODULE(Computer_Top) {
     
     sc_signal<bool> alu_a[4], alu_b[4], alu_op[4], alu_res[4];
     sc_signal<bool> alu_cout;
+    sc_signal<bool> alu_zero;
 
     ProgramCounter *pc;
     MAR *mar;
@@ -71,6 +72,7 @@ SC_MODULE(Computer_Top) {
         cu->mar_load(mar_load); cu->ir_load(ir_load); cu->ir_out(ir_out); 
         cu->ram_out(ram_out); cu->ram_write(ram_we); cu->acc_load(acc_load); 
         cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
+        cu->zero_flag(alu_zero);
         
         pc_load.write(false);
 
@@ -88,6 +90,7 @@ SC_MODULE(Computer_Top) {
             alu->opcode[i](alu_op[i]); alu->result[i](alu_res[i]);
         }
         alu->cout(alu_cout); alu->alu_out_en(alu_out); alu->data_out(central_bus);
+        alu->zero(alu_zero);
 
         SC_METHOD(alu_glue_logic);
         sensitive << regA->internal_data << regB_val << opcode_ir;
@@ -101,7 +104,9 @@ void Computer_Top::alu_glue_logic() {
     for(int i=0; i<4; i++) {
         alu_a[i].write(a_val[i]);
         alu_b[i].write(b_val[i]);
-        alu_op[i].write(false); 
+        // Si la instruccion es SUB (0x5), configuramos la ALU para restar (opcode 0001)
+        if (opcode_ir.read() == 0x5 && i == 0) alu_op[i].write(true);
+        else alu_op[i].write(false);
     }
 }
 

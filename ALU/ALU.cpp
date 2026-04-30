@@ -29,3 +29,14 @@ void ALU::drive_bus() {
     data_out.write("ZZZZZZZZ");
   }
 }
+
+void ALU::drive_zero() {
+  bool is_zero = true;
+  for (int i = 0; i < 4; i++) {
+    if (result[i].read() == true) {
+      is_zero = false;
+      break;
+    }
+  }
+  zero.write(is_zero);
+}
