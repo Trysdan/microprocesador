@@ -20,7 +20,14 @@ void loadProgram(RAM256x8* ram, const std::string& filename) {
         {"JZ",  0x4}, {"SUB", 0x5}, {"AND", 0x6},
         {"OR",  0x7}, {"XOR", 0x8}, {"NOT", 0x9},
         {"EQL", 0xA}, {"GRT", 0xB}, {"IF",  0xC},
-        {"STA", 0xD}, {"OUT", 0xE}, {"HLT", 0xF}
+        {"STA", 0xD}, {"OUT", 0xE}, {"HLT", 0xF},
+        {"LDR", 0x10}, {"STR", 0x18}, {"ADDR", 0x20}
+    };
+
+    // Mapa de registros para facilitar el parsing
+    std::map<std::string, uint8_t> registers = {
+        {"R0", 0}, {"R1", 1}, {"R2", 2}, {"R3", 3},
+        {"R4", 4}, {"R5", 5}, {"R6", 6}, {"R7", 7}
     };
 
 
@@ -61,15 +68,40 @@ void loadProgram(RAM256x8* ram, const std::string& filename) {
             uint8_t op = opcodes[word];
             int operand = 0;
             
-            if (word != "OUT" && word != "HLT" && word != "NOT") {
-                if (!(ss >> operand)) operand = 0;
+            // Manejo de instrucciones con registros (Fase 2)
+            if (word == "LDR" || word == "STR" || word == "ADDR") {
+                std::string regName;
+                if (ss >> regName) {
+                    // Limpiar coma y espacios
+                    size_t commaPos = regName.find(',');
+                    if (commaPos != std::string::npos) regName.erase(commaPos);
+                    
+                    if (registers.count(regName)) {
+                        op += registers[regName];
+                        std::cout << "   -> Rx Detectado: " << regName << " (Op Final: 0x" << std::hex << (int)op << std::dec << ")" << std::endl;
+                    }
+                }
+            }
+
+            // Para instrucciones que NO son de 1 byte (HLT, OUT, NOT, ADDR)
+            if (word != "OUT" && word != "HLT" && word != "NOT" && word != "ADDR") {
+                std::string operandStr;
+                if (ss >> operandStr) {
+                    // Si el operando tenia la coma pegada (ej: R1,100)
+                    size_t commaPos = operandStr.find(',');
+                    if (commaPos != std::string::npos) operandStr = operandStr.substr(commaPos + 1);
+                    
+                    try {
+                        operand = std::stoi(operandStr);
+                    } catch (...) { operand = 0; }
+                }
             }
 
             ram->mem[address].write(op);
             std::cout << "ADDR " << std::setw(3) << address << ": " 
                       << word << " (0x" << std::hex << (int)op << std::dec << ")" << std::endl;
             
-            if (word != "OUT" && word != "HLT" && word != "NOT") {
+            if (word != "OUT" && word != "HLT" && word != "NOT" && word != "ADDR") {
                 address++;
                 ram->mem[address].write(operand & 0xFF);
                 std::cout << "ADDR " << std::setw(3) << address << ":   -> Operando: " << operand << std::endl;
@@ -116,19 +148,20 @@ int sc_main(int argc, char* argv[]) {
     reset.write(false);
 
     std::cout << "Iniciando ejecucion de: " << programFile << "\n";
-    std::cout << "--------------------------------------------------------\n";
-    std::cout << " Tiempo | Estado | PC |  Bus  |  ACC  | MAR |  OUT \n";
-    std::cout << "--------------------------------------------------------\n";
+    std::cout << "----------------------------------------------------------------------\n";
+    std::cout << " Tiempo | Est | PC |   Bus    |  ACC  | RegB  | MAR | OUT \n";
+    std::cout << "----------------------------------------------------------------------\n";
 
-    for (int i = 0; i < 5000; i++) { // Aumentamos ciclos para Fibonacci y Mult
+    for (int i = 0; i < 2000; i++) { 
         sc_start(10, SC_NS);
         
         std::cout << std::setw(6) << sc_time_stamp() << " | "
-                  << "  T" << (computer.cu->current_state.read() + 1) << "   | "
+                  << " T" << (computer.cu->current_state.read() + 1) << " | "
                   << std::setw(2) << computer.pc->current_value.read() << " | "
                   << computer.central_bus.read() << " | "
-                  << std::setw(3) << computer.regA->internal_data.read() << " | "
-                  << std::setw(2) << computer.ram_addr.read() << " | "
+                  << std::setw(5) << computer.regA->internal_data.read() << " | "
+                  << std::setw(5) << computer.regB->internal_data.read() << " | "
+                  << std::setw(3) << computer.mar->address.read() << " | "
                   << std::setw(3) << computer.out_reg->internal_value.read() << "\n";
         
         // Deteccion de HLT (OpCode 0xF) al final del ciclo T8
@@ -138,9 +171,9 @@ int sc_main(int argc, char* argv[]) {
         }
     }
 
-    std::cout << "--------------------------------------------------------\n";
+    std::cout << "----------------------------------------------------------------------\n";
     std::cout << "RESULTADO FINAL (OUT REGISTER): " << computer.out_reg->internal_value.read() << "\n";
-    std::cout << "========================================================\n";
+    std::cout << "======================================================================\n";
 
     return 0;
 }

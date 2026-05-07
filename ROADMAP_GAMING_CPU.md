@@ -4,7 +4,7 @@ Este documento detalla la evolución técnica desde el microprocesador actual ha
 
 ---
 
-## Fase 1: Infraestructura de 8 bits (Fundamentos)
+## Fase 1: Infraestructura de 8 bits (Fundamentos) [COMPLETADA]
 **Objetivo**: Expandir el bus de direcciones y la capacidad aritmética.
 
 ### ¿Cómo lo haremos?
@@ -18,7 +18,7 @@ Este documento detalla la evolución técnica desde el microprocesador actual ha
 
 ---
 
-## Fase 2: El Banco de Registros (R0-R7)
+## Fase 2: El Banco de Registros (R0-R7) [COMPLETADA]
 **Objetivo**: Implementar memoria interna de alta velocidad.
 
 ### ¿Cómo lo haremos?

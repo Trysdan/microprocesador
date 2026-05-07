@@ -20,6 +20,11 @@ SC_MODULE(ControlUnit) {
     sc_out<bool> regB_load;   // Nueva senal para el Registro B
     sc_out<bool> alu_out;     // ALU Out Enable
     sc_out<bool> out_load;    // Nueva senal para el Registro de Salida (Week 11)
+    
+    // Senales para el Banco de Registros (Fase 2)
+    sc_out<bool> reg_file_write;
+    sc_out<bool> reg_file_out;
+    sc_out<sc_uint<3>> reg_file_sel;
 
     enum State { T1, T2, T3, T4, T5, T6, T7, T8 };
     sc_signal<State> current_state;

@@ -139,6 +139,7 @@ add_executable(tb_jump
     Memory/MAR.cpp
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
+    Registers/RegisterFile.cpp
     Control/ProgramCounter.cpp
     Control/InstructionRegister.cpp
     Control/ControlUnit.cpp
@@ -157,6 +158,7 @@ add_executable(tb_output
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
     Registers/OutputRegister.cpp
+    Registers/RegisterFile.cpp
     Control/ProgramCounter.cpp
     Control/InstructionRegister.cpp
     Control/ControlUnit.cpp
@@ -174,6 +176,7 @@ add_executable(microprocessor_final
     Memory/MAR.cpp
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
+    Registers/RegisterFile.cpp
     Control/ProgramCounter.cpp
     Control/InstructionRegister.cpp
     Control/ControlUnit.cpp

@@ -31,6 +31,11 @@ void ControlUnit::process_output_logic() {
     regB_load.write(false);
     alu_out.write(false);
     out_load.write(false);
+    
+    // Banco de Registros (Fase 2)
+    reg_file_write.write(false);
+    reg_file_out.write(false);
+    reg_file_sel.write(0);
 
     State state = current_state.read();
     
@@ -56,10 +61,12 @@ void ControlUnit::process_output_logic() {
             break;
 
         case T4: // Fetch Operando 1
-            if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x03 || op_val == 0x04 || op_val == 0x0C || op_val == 0x0D) { 
+            if ((op_val >= 0x01 && op_val <= 0x08) || (op_val >= 0x0A && op_val <= 0x0D) || (op_val >= 0x10 && op_val <= 0x1F)) { 
                 // Instrucciones que requieren operando de 8 bits (Direccion)
                 pc_out.write(true);
                 mar_load.write(true);
+            } else if (op_val >= 0x20 && op_val <= 0x27) {
+                // ADDR Rx es de 1 byte, pero habilitamos logica en T7/T8
             } else if (op_val == 0x0E || op_val == 0x0F || op_val == 0x09) {
                 // OUT, HLT, NOT (Instrucciones de 1 Byte, no requieren operando)
                 // Se ejecutan en ciclos tempranos para no esperar a T8.
@@ -75,35 +82,54 @@ void ControlUnit::process_output_logic() {
             break;
 
         case T5: // Fetch Operando 2
-            if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x03 || op_val == 0x04 || op_val == 0x0C || op_val == 0x0D) { 
-                pc_inc.write(true); // PC apunta a la siguiente instruccion despues del operando
+            if ((op_val >= 0x01 && op_val <= 0x08) || (op_val >= 0x0A && op_val <= 0x0D) || (op_val >= 0x10 && op_val <= 0x1F)) { 
+                ram_out.write(true); // Pone el operando (direccion) en el bus
+                
+                // Si es un SALTO, cargamos el PC directamente con el valor del bus
+                if (op_val == 0x03) { // JMP
+                    pc_load.write(true);
+                    mar_load.write(true); // MAR tambien apunta al destino para el siguiente T1
+                } else if (op_val == 0x04) { // JZ
+                    if (acc_val.read() == 0) {
+                        pc_load.write(true);
+                        mar_load.write(true);
+                    } else {
+                        pc_inc.write(true); // Si no salta, solo pasamos el operando
+                        mar_load.write(true); 
+                    }
+                } else if (op_val == 0x0C) { // IF (Jump if NOT Zero)
+                    if (acc_val.read() != 0) {
+                        pc_load.write(true);
+                        mar_load.write(true);
+                    } else {
+                        pc_inc.write(true);
+                        mar_load.write(true);
+                    }
+                } else {
+                    // Instrucciones normales (LDA, ADD, LDR, etc.)
+                    mar_load.write(true);
+                    pc_inc.write(true); 
+                }
             }
             break;
 
-        case T6: // Fetch Operando 3: Direccionamiento / Carga de PC
-            if (op_val == 0x03) { // JMP incondicional
-                ram_out.write(true);
-                pc_load.write(true);
-            } else if (op_val == 0x04) { // JZ (Jump if Zero)
-                if (acc_val.read() == 0) {
-                    ram_out.write(true);
-                    pc_load.write(true);
-                }
-            } else if (op_val == 0x0C) { // IF (Jump if NOT Zero)
-                if (acc_val.read() != 0) {
-                    ram_out.write(true);
-                    pc_load.write(true);
-                }
-            } else if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x0D) {
-                // LDA, ADD, SUB, Lógicas, STA... El operando es una dirección de RAM donde esta el dato real
-                // Por lo tanto, movemos el operando (dirección) de la RAM al MAR
-                ram_out.write(true);
-                mar_load.write(true);
-            }
+        case T6: // Ciclo de espera para sincronizacion
             break;
 
-        case T7: // Execute 1: Leer dato de RAM
-            if (op_val == 0x01) { // LDA
+        case T7: // Execute 1: Operacion Memoria o Registros
+            if (op_val >= 0x10 && op_val <= 0x17) { // LDR Rx, addr
+                ram_out.write(true);
+                reg_file_write.write(true);
+                reg_file_sel.write(op_val & 0x07);
+            } else if (op_val >= 0x18 && op_val <= 0x1F) { // STR Rx, addr
+                reg_file_out.write(true);
+                reg_file_sel.write(op_val & 0x07);
+                ram_write.write(true);
+            } else if (op_val >= 0x20 && op_val <= 0x27) { // ADDR Rx
+                reg_file_out.write(true);
+                reg_file_sel.write(op_val & 0x07);
+                regB_load.write(true);
+            } else if (op_val == 0x01) { // LDA
                 ram_out.write(true);
                 acc_load.write(true);
             } else if (op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B) { 
@@ -117,6 +143,10 @@ void ControlUnit::process_output_logic() {
             break;
 
         case T8: // Execute 2: Operacion ALU
+            if (op_val >= 0x20 && op_val <= 0x27) { // ADDR Rx (Finaliza la suma)
+                alu_out.write(true);
+                acc_load.write(true);
+            }
             if (op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B) { 
                 alu_out.write(true);
                 acc_load.write(true);

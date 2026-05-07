@@ -11,6 +11,7 @@
 #include "Control/ProgramCounter.hpp"
 #include "Control/ControlUnit.hpp"
 #include "Registers/OutputRegister.hpp"
+#include "Registers/RegisterFile.hpp" // Nuevo Banco de Registros
 
 SC_MODULE(Computer_Top) {
     sc_in<bool> clk;
@@ -27,6 +28,10 @@ SC_MODULE(Computer_Top) {
     sc_signal<bool> regB_load;
     sc_signal<bool> alu_out;
     sc_signal<bool> out_load;
+    
+    // Senales para el Banco de Registros (Fase 2)
+    sc_signal<bool> rf_write, rf_out;
+    sc_signal<sc_uint<3>> rf_sel;
 
     // Senales de Datos Internas
     sc_signal<sc_uint<8>> ram_addr;
@@ -45,6 +50,7 @@ SC_MODULE(Computer_Top) {
     ALU *alu;
     RegisterA *regA;
     RegisterB *regB;
+    RegisterFile *regFile; // Instancia del banco de registros
     OutputRegister *out_reg;
 
     void alu_glue_logic();
@@ -87,6 +93,15 @@ SC_MODULE(Computer_Top) {
         cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
         cu->zero_flag(alu_zero); cu->out_load(out_load);
         cu->acc_val(regA->internal_data);
+        cu->reg_file_write(rf_write);
+        cu->reg_file_out(rf_out);
+        cu->reg_file_sel(rf_sel);
+        
+        // Banco de Registros (Fase 2)
+        regFile = new RegisterFile("RegFile");
+        regFile->clk(clk); regFile->reset(reset);
+        regFile->reg_write(rf_write); regFile->reg_out(rf_out);
+        regFile->reg_sel(rf_sel); regFile->bus_data(central_bus);
         
         pc_load.write(false);
 
