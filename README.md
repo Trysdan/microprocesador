@@ -1,59 +1,32 @@
-# SystemC Microprocessor Design / Diseno de Microprocesador en SystemC
+# Microprocesador RISC v2 Gaming Edition (SystemC)
 
-*[Read in English](#english) | [Leer en Espanol](#espanol)*
+Procesador estructural de 16 bits con Pipeline de 5 etapas, diseñado específicamente para soportar videojuegos retro mediante **Memory Mapped I/O (MMIO)**.
 
----
+## Características Principales
+- **Arquitectura RISC**: 16 bits con pipeline de 5 etapas (IF, ID, EX, MEM, WB).
+- **Video & Input**:
+  - **Framebuffer 8x6** integrado en memoria (0xC0-0xEF).
+  - **Captura de Teclado** no bloqueante vía MMIO (0xF0).
+- **ISA Extendida**: Soporte para punteros mediante **LOADI** y **STORI** (direccionamiento indirecto).
+- **Gestión de Riesgos**: Forwarding Unit completa y Hazard Detection Unit.
+- **Ensamblador**: Soporte para etiquetas y carga automática de programas `.asm`.
 
-<a id="english"></a>
-## 🇬🇧 English
-
-### Overview
-This project is an educational, long-term endeavor to build a complete microprocessor from scratch using **SystemC**. The design approach is incremental, starting from fundamental digital logic components and scaling up to a fully functional processor architecture. 
-
-**Current Status**: The processor is now a complete **8-bit Architecture** with a **Register File (R0-R7)**. It features a native 8-bit CLA ALU, 256 bytes of RAM, and supports variable length instructions (1-2 bytes).
-
-### Key Features
-- **8-bit Native ALU**: Structural CLA (Carry Look-Ahead) logic for high-performance arithmetic and comparison.
-- **256 Bytes RAM**: Expanded memory addressing (8-bit MAR).
-- **8-Bit Register File**: 8 internal general-purpose registers (R0-R7) to reduce RAM dependency.
-- **Variable Length ISA**: Optimized 1-byte and 2-byte instructions for higher execution speed.
-- **Structural RTL Design**: Every component is built thinking in real gates and hardware cables.
-
-### Milestones
-- [x] **Phase 0**: 4-bit Structural Core (Accumulator based).
-- [x] **Phase 1**: Transition to native 8-bit Architecture & 2-Byte Instructions.
-- [x] **Phase 2**: General Purpose Register File (R0-R7) & Internal Storage.
-- [ ] **Phase 3**: Simple Video/Grid Display (16x16 Mesh).
-- [ ] **Phase 4**: Basic Game Logic Implementation.
-
----
-
-<a id="espanol"></a>
-## 🇪🇸 Espanol
-
-### Descripcion General
-Este proyecto es una iniciativa educativa a largo plazo con el objetivo de construir un microprocesador completo desde cero utilizando **SystemC**. El enfoque de diseno es incremental, comenzando con componentes logicos fundamentales hasta llegar a una arquitectura de procesador totalmente funcional.
-
-**Estado Actual**: El procesador ha evolucionado a una **Arquitectura de 8 bits con Banco de Registros (R0-R7)**. Cuenta con una ALU nativa de 8 bits (CLA), 256 bytes de RAM y soporte para instrucciones optimizadas de longitud variable.
-
-### Caracteristicas Clave
-- **ALU Nativa de 8 bits**: Logica estructural CLA (Acarreo Anticipado) para operaciones aritmeticas y comparaciones de alto rendimiento.
-- **256 Bytes de RAM**: Direccionamiento de memoria expandido (MAR de 8 bits).
-- **Banco de Registros de 8 bits**: 8 registros internos (R0-R7) para reducir la dependencia de la RAM.
-- **ISA de Longitud Variable**: Instrucciones de 1 y 2 bytes optimizadas para mayor velocidad de ejecucion.
-- **Diseno Estructural RTL**: Cada componente esta construido pensando en compuertas reales y cables de hardware.
-
-### Hitos del Proyecto
-- [x] **Fase 0**: Nucleo estructural de 4 bits (basado en Acumulador).
-- [x] **Fase 1**: Transicion a Arquitectura Nativa de 8 bits e Instrucciones de 2 Bytes.
-- [x] **Fase 2**: Banco de Registros de Proposito General (R0-R7) y Almacenamiento Interno.
-- [ ] **Fase 3**: Pantalla de video simple (Malla de 16x16).
-- [ ] **Fase 4**: Implementacion de logica de juego basica.
-
-### Guia de Inicio
-Para compilar y ejecutar el procesador con un programa especifico:
-```bash
-./run_tests.sh               # Ejecuta todos los tests unitarios
-./microprocessor_final <archivo.asm>  # Ejecuta un programa especifico
+## Cómo Jugar (Demo Snake)
+Asegúrate de estar en un entorno con SystemC instalado (o vía WSL):
+```cmd
+wsl -e bash -c "cd build && make microprocessor_v2 && ./microprocessor_v2 ../snake.asm"
 ```
-Consulta el **[PROCESSOR_MANUAL.md](PROCESSOR_MANUAL.md)** para aprender a programar tu procesador.
+*Usa las teclas `w`, `a`, `s`, `d` para mover el píxel en la consola.*
+
+## Ejecución de Pruebas
+Para validar la integridad de la arquitectura:
+```cmd
+wsl -e bash -c "./run_tests_v2.sh"
+```
+
+## Estructura del Proyecto
+- `ALU/`: Lógica aritmética y de comparación.
+- `Control/`: Unidad de Control y Decodificador.
+- `Peripheral/`: Manejo de Framebuffer y Teclado.
+- `snake.asm`: Código fuente del videojuego demo.
+- `Manual_ISA_v2.md`: Documentación completa de instrucciones.

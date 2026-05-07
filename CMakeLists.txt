@@ -194,3 +194,29 @@ add_test(NAME Test_Final COMMAND microprocessor_final)
 # add_executable(tb_control_unit ControlUnit/main.cpp ControlUnit/ControlUnit.cpp)
 # target_link_libraries(tb_control_unit PRIVATE SystemC::systemc)
 # add_test(NAME Test_ControlUnit COMMAND tb_control_unit)
+
+# ==========================================
+# Microprocesador V2: Pipeline RISC 5 Etapas
+# ==========================================
+set(PIPELINE_SOURCES
+    Pipeline/PipelineRegisters.cpp
+    Pipeline/ForwardingUnit.cpp
+    Pipeline/HazardDetectionUnit.cpp
+)
+
+set(V2_SOURCES
+    Memory/DualPortRAM.cpp
+    Registers/RegisterFile_v2.cpp
+    ALU/ALU_v2.cpp
+    Control/Decoder.cpp
+    ${PIPELINE_SOURCES}
+    Computer_Top_v2.cpp
+)
+
+add_executable(microprocessor_v2
+    main_v2.cpp
+    ${V2_SOURCES}
+)
+target_link_libraries(microprocessor_v2 PRIVATE SystemC::systemc)
+add_test(NAME Test_Pipeline COMMAND microprocessor_v2 test_pipeline.asm)
+

@@ -1,22 +1,13 @@
-; --- MULTIPLICACION (FINAL) ---
-LDA 101
-JZ 16
-SUB 102
-STA 101
-LDA 100
-ADD 103
-STA 100
-JMP 0
-@16
-LDA 100
-OUT
-HLT
+; mult.asm — Multiplicación por sumas repetidas
+MVI R1, 10
+MVI R2, 5
+MVI R3, 0
+MVI R4, 1
 
-@100
-0
-@101
-5
-@102
-1
-@103
-10
+loop:
+    ADD R3, R3, R1
+    SUB R2, R2, R4
+    BNZ R2, loop
+
+    OUT R3
+    HLT
