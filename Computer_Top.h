@@ -5,7 +5,7 @@
 #include "ALU/ALU.hpp"
 #include "Registers/RegisterA.hpp"
 #include "Registers/RegisterB.hpp"
-#include "Memory/RAM16x8.hpp"
+#include "Memory/RAM256x8.hpp"
 #include "Memory/MAR.hpp"
 #include "Control/InstructionRegister.hpp"
 #include "Control/ProgramCounter.hpp"
@@ -29,18 +29,17 @@ SC_MODULE(Computer_Top) {
     sc_signal<bool> out_load;
 
     // Senales de Datos Internas
-    sc_signal<sc_uint<4>> ram_addr;
-    sc_signal<sc_uint<4>> opcode_ir;
-    sc_signal<sc_uint<4>> operand_ir;
-    sc_signal<sc_uint<4>> regB_val;
+    sc_signal<sc_uint<8>> ram_addr;
+    sc_signal<sc_uint<8>> opcode_ir;
+    sc_signal<sc_uint<8>> regB_val;
     
-    sc_signal<bool> alu_a[4], alu_b[4], alu_op[4], alu_res[4];
+    sc_signal<bool> alu_a[8], alu_b[8], alu_op[4], alu_res[8];
     sc_signal<bool> alu_cout;
     sc_signal<bool> alu_zero;
 
     ProgramCounter *pc;
     MAR *mar;
-    RAM16x8 *ram;
+    RAM256x8 *ram;
     InstructionRegister *ir;
     ControlUnit *cu;
     ALU *alu;
@@ -60,24 +59,13 @@ SC_MODULE(Computer_Top) {
         mar->clk(clk); mar->reset(reset); mar->mar_load(mar_load);
         mar->data_in(central_bus); mar->address(ram_addr);
 
-        ram = new RAM16x8("RAM");
+        ram = new RAM256x8("RAM");
         ram->clk(clk); ram->write_enable(ram_we); ram->out_enable(ram_out);
         ram->address(ram_addr); ram->data_in(central_bus); ram->data_out(central_bus);
 
         ir = new InstructionRegister("IR");
         ir->clk(clk); ir->reset(reset); ir->ir_load(ir_load);
-        ir->data_in(central_bus); ir->opcode(opcode_ir); ir->operand(operand_ir);
-        ir->ir_out_en(ir_out); ir->bus_out(central_bus);
-
-        cu = new ControlUnit("CU");
-        cu->clk(clk); cu->reset(reset); cu->opcode(opcode_ir);
-        cu->pc_inc(pc_inc); cu->pc_out(pc_out); cu->pc_load(pc_load); 
-        cu->mar_load(mar_load); cu->ir_load(ir_load); cu->ir_out(ir_out); 
-        cu->ram_out(ram_out); cu->ram_write(ram_we); cu->acc_load(acc_load); 
-        cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
-        cu->zero_flag(alu_zero); cu->out_load(out_load);
-        
-        pc_load.write(false);
+        ir->data_in(central_bus); ir->opcode(opcode_ir);
 
         regA = new RegisterA("RegA");
         regA->clk(clk); regA->reset(reset); regA->load_enable(acc_load);
@@ -91,10 +79,24 @@ SC_MODULE(Computer_Top) {
         out_reg->clk(clk); out_reg->reset(reset); out_reg->out_load(out_load);
         out_reg->data_in(central_bus);
 
+        cu = new ControlUnit("CU");
+        cu->clk(clk); cu->reset(reset); cu->opcode(opcode_ir);
+        cu->pc_inc(pc_inc); cu->pc_out(pc_out); cu->pc_load(pc_load); 
+        cu->mar_load(mar_load); cu->ir_load(ir_load); 
+        cu->ram_out(ram_out); cu->ram_write(ram_we); cu->acc_load(acc_load); 
+        cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
+        cu->zero_flag(alu_zero); cu->out_load(out_load);
+        cu->acc_val(regA->internal_data); // Conexión directa del Acumulador para saltos precisos
+        
+        pc_load.write(false);
+
         alu = new ALU("ALU");
-        for(int i=0; i<4; i++) {
+        for(int i=0; i<8; i++) {
             alu->a[i](alu_a[i]); alu->b[i](alu_b[i]);
-            alu->opcode[i](alu_op[i]); alu->result[i](alu_res[i]);
+            alu->result[i](alu_res[i]);
+        }
+        for(int i=0; i<4; i++) {
+            alu->opcode[i](alu_op[i]);
         }
         alu->cout(alu_cout); alu->alu_out_en(alu_out); alu->data_out(central_bus);
         alu->zero(alu_zero);
@@ -105,13 +107,15 @@ SC_MODULE(Computer_Top) {
 };
 
 void Computer_Top::alu_glue_logic() {
-    sc_uint<4> a_val = regA->internal_data.read();
-    sc_uint<4> b_val = regB_val.read();
-    sc_uint<4> op = opcode_ir.read();
+    sc_uint<8> a_val = regA->internal_data.read();
+    sc_uint<8> b_val = regB_val.read();
+    sc_uint<8> op = opcode_ir.read();
     
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<8; i++) {
         alu_a[i].write(a_val[i]);
         alu_b[i].write(b_val[i]);
+    }
+    for(int i=0; i<4; i++) {
         alu_op[i].write(op[i]);
     }
 }

@@ -15,18 +15,24 @@ int sc_main(int argc, char* argv[]) {
     std::cout << "      TESTBENCH: OUTPUT REGISTER (WEEK 11)   \n";
     std::cout << "=============================================\n\n";
 
-    // PROGRAMA "HELLO WORLD" (Contador Infinito):
-    // ADDR 0: 0x1E -> LDA 14 (Carga valor inicial 0)
-    // ADDR 1: 0x2F -> ADD 15 (Suma constante 1)
-    // ADDR 2: 0xE0 -> OUT    (Enviar al Registro de Salida)
-    // ADDR 3: 0x31 -> JMP 1  (Saltar de regreso al ADD)
+    // PROGRAMA "HELLO WORLD" (Contador Infinito - 2 Bytes):
+    // ADDR 0: 0x01 (LDA)
+    // ADDR 1: 14   (Operando) -> Carga valor inicial 0
+    // ADDR 2: 0x02 (ADD)
+    // ADDR 3: 15   (Operando) -> Suma constante 1
+    // ADDR 4: 0x0E (OUT)    -> Enviar al Registro de Salida
+    // ADDR 5: 0x03 (JMP)
+    // ADDR 6: 2    (Operando) -> Saltar de regreso al ADD (Dirección 2)
     // ADDR 14: 0x00 (Valor inicial)
     // ADDR 15: 0x01 (Constante 1)
     
-    computer.ram->mem[0].write(0x1E);
-    computer.ram->mem[1].write(0x2F);
-    computer.ram->mem[2].write(0xE0);
-    computer.ram->mem[3].write(0x31);
+    computer.ram->mem[0].write(0x01);
+    computer.ram->mem[1].write(14);
+    computer.ram->mem[2].write(0x02);
+    computer.ram->mem[3].write(15);
+    computer.ram->mem[4].write(0x0E);
+    computer.ram->mem[5].write(0x03);
+    computer.ram->mem[6].write(2);
     computer.ram->mem[14].write(0x00);
     computer.ram->mem[15].write(0x01);
 

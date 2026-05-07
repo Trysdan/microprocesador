@@ -8,7 +8,7 @@
 #include <map>
 
 // Funcion Loader: Carga un archivo .asm en la memoria RAM
-void loadProgram(RAM16x8* ram, const std::string& filename) {
+void loadProgram(RAM256x8* ram, const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "[ERROR] No se pudo abrir el archivo: " << filename << std::endl;
@@ -20,7 +20,7 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
         {"JZ",  0x4}, {"SUB", 0x5}, {"AND", 0x6},
         {"OR",  0x7}, {"XOR", 0x8}, {"NOT", 0x9},
         {"EQL", 0xA}, {"GRT", 0xB}, {"IF",  0xC},
-        {"OUT", 0xE}, {"HLT", 0xF}
+        {"STA", 0xD}, {"OUT", 0xE}, {"HLT", 0xF}
     };
 
 
@@ -29,34 +29,58 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
     int address = 0;
     std::cout << "\n--- Cargando Programa: " << filename << " ---" << std::endl;
 
-    while (std::getline(file, line) && address < 16) {
-        if (line.empty() || line[0] == ';') continue; // Saltar lineas vacias o comentarios
+    while (std::getline(file, line)) {
+        // Eliminar comentarios y espacios al inicio/final
+        size_t commentPos = line.find(';');
+        if (commentPos != std::string::npos) line = line.substr(0, commentPos);
+        
+        // Limpiar espacios en blanco al inicio y final
+        line.erase(0, line.find_first_not_of(" \t\r\n"));
+        line.erase(line.find_last_not_of(" \t\r\n") + 1);
+
+        if (line.empty()) continue;
 
         std::stringstream ss(line);
-        std::string mnemonic;
-        int operand = 0;
+        std::string word;
+        ss >> word;
 
-        ss >> mnemonic;
-        if (opcodes.find(mnemonic) != opcodes.end()) {
-            uint8_t op = opcodes[mnemonic];
-            if (mnemonic != "OUT" && mnemonic != "HLT" && mnemonic != "NOT") {
-                ss >> operand;
+        // Caso 1: Cambio de direccion (@100)
+        if (word[0] == '@') {
+            try {
+                address = std::stoi(word.substr(1));
+                std::cout << "[LOADER] Saltando a Direccion: " << address << std::endl;
+                continue;
+            } catch (...) {
+                std::cerr << "[ERROR] Direccion invalida: " << word << std::endl;
+                continue;
+            }
+        }
+
+        // Caso 2: Mnemónico
+        if (opcodes.find(word) != opcodes.end()) {
+            uint8_t op = opcodes[word];
+            int operand = 0;
+            
+            if (word != "OUT" && word != "HLT" && word != "NOT") {
+                if (!(ss >> operand)) operand = 0;
             }
 
+            ram->mem[address].write(op);
+            std::cout << "ADDR " << std::setw(3) << address << ": " 
+                      << word << " (0x" << std::hex << (int)op << std::dec << ")" << std::endl;
             
-            uint8_t instruction = (op << 4) | (operand & 0x0F);
-            ram->mem[address].write(instruction);
-            
-            std::cout << "ADDR " << std::setw(2) << address << ": " 
-                      << mnemonic << " " << operand 
-                      << " (0x" << std::hex << (int)instruction << std::dec << ")" << std::endl;
+            if (word != "OUT" && word != "HLT" && word != "NOT") {
+                address++;
+                ram->mem[address].write(operand & 0xFF);
+                std::cout << "ADDR " << std::setw(3) << address << ":   -> Operando: " << operand << std::endl;
+            }
             address++;
         } else {
-            // Si no es un mnemónico, podria ser un dato directo (ej: para ADDR 14)
+            // Caso 3: Dato directo
             try {
-                int value = std::stoi(mnemonic);
+                int value = std::stoi(word);
                 ram->mem[address].write(value & 0xFF);
-                std::cout << "ADDR " << std::setw(2) << address << ": DATA " << value << std::endl;
+                std::cout << "ADDR " << std::setw(3) << address << ": DATA " << value << std::endl;
                 address++;
             } catch (...) {
                 std::cerr << "[WARN] Linea ignorada: " << line << std::endl;
@@ -68,58 +92,55 @@ void loadProgram(RAM16x8* ram, const std::string& filename) {
 }
 
 int sc_main(int argc, char* argv[]) {
-    // Reloj Global
+    // 1. Manejo de Argumentos de Consola
+    std::string programFile = "programa.asm";
+    if (argc > 1) {
+        programFile = argv[1];
+    } else {
+        std::cout << "[INFO] No se especifico archivo. Usando defecto: " << programFile << std::endl;
+        std::cout << "Uso: ./microprocessor_final <archivo.asm>\n" << std::endl;
+    }
+
     sc_clock clk("clk", 10, SC_NS, 0.5);
     sc_signal<bool> reset;
 
-    // Instancia del Sistema Completo
     Computer_Top computer("MyComputer");
     computer.clk(clk);
     computer.reset(reset);
 
-    // Trazado de Ondas
-    sc_trace_file *wf = sc_create_vcd_trace_file("microprocessor_loader");
-    sc_trace(wf, clk, "clk");
-    sc_trace(wf, reset, "reset");
-    sc_trace(wf, computer.central_bus, "BUS");
-    sc_trace(wf, computer.cu->current_state, "STATE");
-    sc_trace(wf, computer.pc->current_value, "PC");
-    sc_trace(wf, computer.regA->internal_data, "ACC");
+    // Carga del programa especificado
+    loadProgram(computer.ram, programFile);
 
-    // CARGA DEL PROGRAMA USANDO EL LOADER
-    // El archivo programa.asm debe existir en el directorio de ejecucion
-    loadProgram(computer.ram, "programa.asm");
-
-    // Inicializacion
     reset.write(true);
     sc_start(15, SC_NS);
     reset.write(false);
 
-    std::cout << "Iniciando ejecucion...\n";
-    std::cout << "---------------------------------------------\n";
-    std::cout << " Tiempo |  Estado  | PC |  Bus  |  ACC  | MAR \n";
-    std::cout << "---------------------------------------------\n";
+    std::cout << "Iniciando ejecucion de: " << programFile << "\n";
+    std::cout << "--------------------------------------------------------\n";
+    std::cout << " Tiempo | Estado | PC |  Bus  |  ACC  | MAR |  OUT \n";
+    std::cout << "--------------------------------------------------------\n";
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 5000; i++) { // Aumentamos ciclos para Fibonacci y Mult
         sc_start(10, SC_NS);
         
         std::cout << std::setw(6) << sc_time_stamp() << " | "
-                  << "   T" << (computer.cu->current_state.read() + 1) << "    | "
+                  << "  T" << (computer.cu->current_state.read() + 1) << "   | "
                   << std::setw(2) << computer.pc->current_value.read() << " | "
                   << computer.central_bus.read() << " | "
                   << std::setw(3) << computer.regA->internal_data.read() << " | "
-                  << std::setw(2) << computer.ram_addr.read() << "\n";
+                  << std::setw(2) << computer.ram_addr.read() << " | "
+                  << std::setw(3) << computer.out_reg->internal_value.read() << "\n";
         
-        if (computer.opcode_ir.read() == 0xF && computer.cu->current_state.read() == 3) {
-            std::cout << "\n[INFO] HLT Detectado. Programa Finalizado.\n";
+        // Deteccion de HLT (OpCode 0xF) al final del ciclo T8
+        if (computer.opcode_ir.read() == 0xF && computer.cu->current_state.read() == 7) {
+            std::cout << "\n[INFO] HLT Detectado. Programa Finalizado con exito.\n";
             break;
         }
     }
 
-    std::cout << "---------------------------------------------\n";
-    std::cout << "RESULTADO FINAL EN ACUMULADOR: " << computer.regA->internal_data.read() << "\n";
-    std::cout << "=============================================\n";
+    std::cout << "--------------------------------------------------------\n";
+    std::cout << "RESULTADO FINAL (OUT REGISTER): " << computer.out_reg->internal_value.read() << "\n";
+    std::cout << "========================================================\n";
 
-    sc_close_vcd_trace_file(wf);
     return 0;
 }

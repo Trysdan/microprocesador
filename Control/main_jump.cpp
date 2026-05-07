@@ -24,23 +24,29 @@ int sc_main(int argc, char* argv[]) {
     std::cout << "      TESTBENCH: JMP & JZ (SEMANA 10)        \n";
     std::cout << "=============================================\n\n";
 
-    // PROGRAMA:
-    // ADDR 0: 0x1E -> LDA 14 (Carga 1 en Acc)
-    // ADDR 1: 0x5E -> SUB 14 (Acc = 1 - 1 = 0)
-    // ADDR 2: 0x45 -> JZ 5   (Si Zero=1, salta a ADDR 5)
-    // ADDR 3: 0xE0 -> OUT    (No se debe ejecutar si JZ funciona)
-    // ADDR 4: 0xF0 -> HLT    (No se debe ejecutar si JZ funciona)
-    // ADDR 5: 0xE0 -> OUT    (Debe mostrar 0)
-    // ADDR 6: 0xF0 -> HLT
+    // PROGRAMA (Formato 2 Bytes):
+    // ADDR 0: 0x01 (LDA)
+    // ADDR 1: 14   (Operando) -> Carga 1 en Acc
+    // ADDR 2: 0x05 (SUB)
+    // ADDR 3: 14   (Operando) -> Acc = 1 - 1 = 0
+    // ADDR 4: 0x04 (JZ)
+    // ADDR 5: 8    (Operando) -> Si Zero=1, salta a ADDR 8
+    // ADDR 6: 0x0E (OUT) -> No se debe ejecutar
+    // ADDR 7: 0x0F (HLT) -> No se debe ejecutar
+    // ADDR 8: 0x0E (OUT) -> Debe mostrar 0
+    // ADDR 9: 0x0F (HLT)
     // ADDR 14: 0x01 (Dato 1)
     
-    computer.ram->mem[0].write(0x1E);
-    computer.ram->mem[1].write(0x5E);
-    computer.ram->mem[2].write(0x45);
-    computer.ram->mem[3].write(0xE0);
-    computer.ram->mem[4].write(0xF0);
-    computer.ram->mem[5].write(0xE0);
-    computer.ram->mem[6].write(0xF0);
+    computer.ram->mem[0].write(0x01);
+    computer.ram->mem[1].write(14);
+    computer.ram->mem[2].write(0x05);
+    computer.ram->mem[3].write(14);
+    computer.ram->mem[4].write(0x04);
+    computer.ram->mem[5].write(8);
+    computer.ram->mem[6].write(0x0E);
+    computer.ram->mem[7].write(0x0F);
+    computer.ram->mem[8].write(0x0E);
+    computer.ram->mem[9].write(0x0F);
     computer.ram->mem[14].write(0x01);
 
     reset.write(true);
@@ -61,16 +67,16 @@ int sc_main(int argc, char* argv[]) {
                   << std::setw(3) << computer.regA->internal_data.read() << " | "
                   << (computer.alu_zero.read() ? "1" : "0") << "\n";
         
-        // Si llegamos al HLT en ADDR 6, el salto funciono
-        if (computer.pc->current_value.read() == 6 && computer.opcode_ir.read() == 0xF) {
+        // Si llegamos al HLT en ADDR 9, el salto funciono (PC estara en 10 tras el fetch)
+        if (computer.pc->current_value.read() == 10 && computer.opcode_ir.read() == 0xF) {
             success = true;
-            std::cout << "\n[INFO] HLT Detectado en ADDR 6. El JZ funciono correctamente!\n";
+            std::cout << "\n[INFO] HLT Detectado tras ADDR 9. El JZ funciono correctamente!\n";
             break;
         }
-        // Si llegamos al HLT en ADDR 4, el salto fallo
-        if (computer.pc->current_value.read() == 4 && computer.opcode_ir.read() == 0xF) {
+        // Si llegamos al HLT en ADDR 7, el salto fallo (PC estara en 8 tras el fetch)
+        if (computer.pc->current_value.read() == 8 && computer.opcode_ir.read() == 0xF) {
             success = false;
-            std::cout << "\n[ERROR] HLT Detectado en ADDR 4. El JZ NO funciono.\n";
+            std::cout << "\n[ERROR] HLT Detectado tras ADDR 7. El JZ NO funciono.\n";
             break;
         }
     }

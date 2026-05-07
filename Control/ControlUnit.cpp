@@ -10,19 +10,20 @@ void ControlUnit::process_state_transition() {
             case T3: current_state.write(T4); break;
             case T4: current_state.write(T5); break;
             case T5: current_state.write(T6); break;
-            case T6: current_state.write(T1); break;
+            case T6: current_state.write(T7); break;
+            case T7: current_state.write(T8); break;
+            case T8: current_state.write(T1); break;
         }
     }
 }
 
 void ControlUnit::process_output_logic() {
-    // Reset de todas las senales (combinacional)
+    // Reset combinacional
     pc_inc.write(false);
     pc_out.write(false);
     pc_load.write(false);
     mar_load.write(false);
     ir_load.write(false);
-    ir_out.write(false);
     ram_out.write(false);
     ram_write.write(false);
     acc_load.write(false);
@@ -32,75 +33,94 @@ void ControlUnit::process_output_logic() {
     out_load.write(false);
 
     State state = current_state.read();
-    sc_uint<4> op = opcode.read();
+    
+    // El OpCode ahora es de 8 bits, pero seguimos usando los valores definidos para mantener compatibilidad
+    sc_uint<8> op_full = opcode.read();
+    sc_uint<4> op = op_full.range(3, 0); // O podemos evaluar el byte completo, pero nuestro ISA original usa 0x1, 0x2, etc.
+    // Usaremos el byte completo para evaluar
+    uint8_t op_val = op_full.to_uint();
 
     switch (state) {
-        case T1: // Fetch 1: PC a MAR
+        case T1: // Fetch OpCode 1: PC a MAR
             pc_out.write(true);
             mar_load.write(true);
             break;
 
-        case T2: // Fetch 2: PC++
+        case T2: // Fetch OpCode 2: PC++
             pc_inc.write(true);
             break;
 
-        case T3: // Fetch 3: RAM[MAR] a IR
+        case T3: // Fetch OpCode 3: RAM[MAR] a IR (Guardamos OpCode)
             ram_out.write(true);
             ir_load.write(true);
             break;
 
-        case T4: // Execute 1
-            if (op == 0x1 || op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
-                // LDA, ADD, SUB, AND, OR, XOR, EQL, GRT
-                ir_out.write(true);
+        case T4: // Fetch Operando 1
+            if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x03 || op_val == 0x04 || op_val == 0x0C || op_val == 0x0D) { 
+                // Instrucciones que requieren operando de 8 bits (Direccion)
+                pc_out.write(true);
                 mar_load.write(true);
-            } else if (op == 0x3) { // JMP
-                ir_out.write(true); 
-                pc_load.write(true); 
-            } else if (op == 0x4) { // JZ
-                if (zero_flag.read() == true) {
-                    ir_out.write(true);
-                    pc_load.write(true);
-                } else {
-                    pc_inc.write(true);
+            } else if (op_val == 0x0E || op_val == 0x0F || op_val == 0x09) {
+                // OUT, HLT, NOT (Instrucciones de 1 Byte, no requieren operando)
+                // Se ejecutan en ciclos tempranos para no esperar a T8.
+                // Podriamos atajar la ejecucion aqui, pero lo mantendremos alineado.
+                if (op_val == 0x09) { // NOT (Acc = ~Acc)
+                    alu_out.write(true);
+                    acc_load.write(true);
+                } else if (op_val == 0x0E) { // OUT
+                    acc_out.write(true);
+                    out_load.write(true);
                 }
-            } else if (op == 0xC) { // IF (Jump if Not Zero / True)
-                if (zero_flag.read() == false) {
-                    ir_out.write(true);
-                    pc_load.write(true);
-                } else {
-                    pc_inc.write(true);
-                }
-            } else if (op == 0x9) { // NOT (Inmediato sobre ACC)
-
-                alu_out.write(true);
-                acc_load.write(true);
-            } else if (op == 0xE) { // OUT
-                acc_out.write(true);
-                out_load.write(true);
             }
             break;
 
+        case T5: // Fetch Operando 2
+            if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x03 || op_val == 0x04 || op_val == 0x0C || op_val == 0x0D) { 
+                pc_inc.write(true); // PC apunta a la siguiente instruccion despues del operando
+            }
+            break;
 
-        case T5: // Execute 2
-            if (op == 0x1) { // LDA: RAM a ACC
+        case T6: // Fetch Operando 3: Direccionamiento / Carga de PC
+            if (op_val == 0x03) { // JMP incondicional
+                ram_out.write(true);
+                pc_load.write(true);
+            } else if (op_val == 0x04) { // JZ (Jump if Zero)
+                if (acc_val.read() == 0) {
+                    ram_out.write(true);
+                    pc_load.write(true);
+                }
+            } else if (op_val == 0x0C) { // IF (Jump if NOT Zero)
+                if (acc_val.read() != 0) {
+                    ram_out.write(true);
+                    pc_load.write(true);
+                }
+            } else if (op_val == 0x01 || op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B || op_val == 0x0D) {
+                // LDA, ADD, SUB, Lógicas, STA... El operando es una dirección de RAM donde esta el dato real
+                // Por lo tanto, movemos el operando (dirección) de la RAM al MAR
+                ram_out.write(true);
+                mar_load.write(true);
+            }
+            break;
+
+        case T7: // Execute 1: Leer dato de RAM
+            if (op_val == 0x01) { // LDA
                 ram_out.write(true);
                 acc_load.write(true);
-            } else if (op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
-                // ADD, SUB, AND, OR, XOR, EQL, GRT: RAM a RegB
+            } else if (op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B) { 
+                // Operaciones con ALU requieren el dato en RegB
                 ram_out.write(true);
                 regB_load.write(true);
+            } else if (op_val == 0x0D) { // STA
+                acc_out.write(true);
+                ram_write.write(true);
             }
             break;
 
-
-        case T6: // Execute 3
-            if (op == 0x2 || op == 0x5 || op == 0x6 || op == 0x7 || op == 0x8 || op == 0xA || op == 0xB) { 
-                // Operaciones ALU a ACC
+        case T8: // Execute 2: Operacion ALU
+            if (op_val == 0x02 || op_val == 0x05 || op_val == 0x06 || op_val == 0x07 || op_val == 0x08 || op_val == 0x0A || op_val == 0x0B) { 
                 alu_out.write(true);
                 acc_load.write(true);
             }
             break;
-
     }
 }

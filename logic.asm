@@ -1,0 +1,11 @@
+; --- LOGIC (FINAL) ---
+LDA 100
+AND 101
+XOR 101
+OUT
+HLT
+
+@100
+170
+@101
+15

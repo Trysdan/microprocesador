@@ -5,23 +5,20 @@
 
 // Modulo Adaptador para convertir bool[4] de la ALU estructural a sc_uint<4> del Registro
 SC_MODULE(ALU_to_Reg_Adapter) {
-    sc_in<bool> alu_res[4];
+    sc_in<bool> alu_res[8];
     sc_out<sc_lv<8>> reg_data_in;
 
     void convert() {
         sc_lv<8> temp;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 8; i++) {
             temp[i] = alu_res[i].read() ? '1' : '0';
-        }
-        for (int i = 4; i < 8; i++) {
-            temp[i] = '0';
         }
         reg_data_in.write(temp);
     }
 
     SC_CTOR(ALU_to_Reg_Adapter) {
         SC_METHOD(convert);
-        for (int i = 0; i < 4; i++) sensitive << alu_res[i];
+        for (int i = 0; i < 8; i++) sensitive << alu_res[i];
     }
 };
 
@@ -30,7 +27,7 @@ int sc_main(int argc, char* argv[]) {
     sc_clock clk("clk", 10, SC_NS, 0.5);
 
     // Senales de la ALU (Estructural)
-    sc_signal<bool> alu_a[4], alu_b[4], alu_op[4], alu_res[4];
+    sc_signal<bool> alu_a[8], alu_b[8], alu_op[4], alu_res[8];
     sc_signal<bool> alu_cout;
     sc_signal<bool> alu_zero;
 
@@ -40,11 +37,13 @@ int sc_main(int argc, char* argv[]) {
 
     // Instancia de la ALU
     ALU alu("ALU");
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 8; i++) {
         alu.a[i](alu_a[i]);
         alu.b[i](alu_b[i]);
-        alu.opcode[i](alu_op[i]);
         alu.result[i](alu_res[i]);
+    }
+    for (int i = 0; i < 4; i++) {
+        alu.opcode[i](alu_op[i]);
     }
     alu.cout(alu_cout);
     alu.zero(alu_zero);
@@ -57,7 +56,7 @@ int sc_main(int argc, char* argv[]) {
 
     // Instancia del Adaptador
     ALU_to_Reg_Adapter adapter("Adapter");
-    for (int i = 0; i < 4; i++) adapter.alu_res[i](alu_res[i]);
+    for (int i = 0; i < 8; i++) adapter.alu_res[i](alu_res[i]);
     adapter.reg_data_in(bus_signal);
 
     // Instancia del Registro (Acumulador)
@@ -76,9 +75,12 @@ int sc_main(int argc, char* argv[]) {
     sc_trace(wf, reg_le, "load_enable");
     sc_trace(wf, bus_signal, "bus_data");
 
-    // Funcion auxiliar para inyectar datos a los puertos bool[4]
+    // Funcion auxiliar para inyectar datos a los puertos bool
     auto set_alu_val = [&](sc_signal<bool>* port, int val) {
-        for (int i = 0; i < 4; i++) port[i].write((val >> i) & 1);
+        for (int i = 0; i < 8; i++) port[i].write((val >> i) & 1);
+    };
+    auto set_alu_op = [&](int val) {
+        for (int i = 0; i < 4; i++) alu_op[i].write((val >> i) & 1);
     };
 
     // --- SECUENCIA DE PRUEBA ---
@@ -86,7 +88,7 @@ int sc_main(int argc, char* argv[]) {
     reg_le.write(false);
     reg_oe.write(false);
     alu_oe_dummy.write(false);
-    set_alu_val(alu_op, 0); // Suma
+    set_alu_op(0x2); // Suma (ADD)
     set_alu_val(alu_a, 0);
     set_alu_val(alu_b, 0);
 

@@ -1,97 +1,84 @@
-# Manual del Microprocesador SystemC (Semana 11)
+# Manual de Usuario - Microprocesador de 8 Bits (SystemC)
 
-Este documento detalla la arquitectura, el conjunto de instrucciones y el flujo de trabajo para utilizar el microprocesador estructural desarrollado en SystemC.
+Este manual describe la arquitectura, el conjunto de instrucciones (ISA) y cómo programar el microprocesador estructural de 8 bits desarrollado en SystemC.
 
-## 1. Especificaciones Tecnicas
-- **Arquitectura**: Basada en SAP-1 (Simple As Possible), implementada a nivel estructural (RTL).
-- **Bus de Datos**: 8 bits con soporte para logica Tri-State (Z).
-- **Instrucciones**: 8 bits (4 bits de OpCode + 4 bits de Operando).
-- **Memoria**: RAM de 16 posiciones x 8 bits cada una.
-- **Registros**: 
-  - `RegisterA` (Acumulador principal).
-  - `RegisterB` (Buffer para la ALU).
-  - `OutputRegister` (Registro de salida con feedback en consola).
-- **ALU**: Estructural de 4 bits con soporte para Suma, Resta, Logica (AND, OR, XOR, NOT) y Comparacion (EQ, GT, LT). Implementada totalmente a nivel de puertas logicas, incluyendo bandera de Cero (Zero Flag).
-
+## 1. Arquitectura del Sistema
+El procesador utiliza una arquitectura de **8 bits** nativa:
+- **Bus de Datos**: 8 bits.
+- **Memoria RAM**: 256 Bytes (Direcciones 0x00 a 0xFF).
+- **Formato de Instrucción**: 2 Bytes (Byte 1: OpCode, Byte 2: Operando/Dirección).
+- **Registros Internos**:
+  - `ACC` (Acumulador): Registro principal de 8 bits.
+  - `RegB`: Registro temporal para la ALU.
+  - `OUT`: Registro de salida para visualización.
+  - `PC`: Contador de programa de 8 bits.
+  - `IR`: Registro de instrucción (captura el OpCode).
 
 ---
 
 ## 2. Conjunto de Instrucciones (ISA)
 
-El procesador soporta las siguientes instrucciones empaquetadas en un byte `[OpCode(4) | Operando(4)]`:
-
-| Mnemonic | OpCode (Hex) | Descripcion |
-|:---:|:---:|:---|
-| **LDA** | `0x1` | **Load Accumulator**: Carga el valor de la RAM[Operando] en el Acumulador. |
-| **ADD** | `0x2` | **Add**: Suma RAM[Operando] al valor del Acumulador. |
-| **JMP** | `0x3` | **Jump**: Salto incondicional a la direccion indicada por el Operando. |
-| **JZ** | `0x4` | **Jump if Zero**: Salta si la bandera de cero esta activa. |
-| **SUB** | `0x5` | **Subtract**: Resta RAM[Operando] al valor del Acumulador. |
-| **AND** | `0x6` | **Bitwise AND**: ACC = ACC & RAM[Operando]. |
-| **OR**  | `0x7` | **Bitwise OR**: ACC = ACC | RAM[Operando]. |
-| **XOR** | `0x8` | **Bitwise XOR**: ACC = ACC ^ RAM[Operando]. |
-| **NOT** | `0x9` | **Bitwise NOT**: ACC = ~ACC (Operando ignorado). |
-| **EQL** | `0xA` | **Equal**: ACC = (ACC == RAM[Operando]) ? 1 : 0. |
-| **GRT** | `0xB` | **Greater Than**: ACC = (ACC > RAM[Operando]) ? 1 : 0. |
-| **IF**  | `0xC` | **If / Jump True**: Salta a la direccion si ACC != 0 (Verdadero). |
-| **OUT** | `0xE` | **Output**: Muestra el valor del Acumulador en el Registro de Salida. |
-
-| **HLT** | `0xF` | **Halt**: Detiene la ejecucion del programa. |
-
+| Mnemónico | OpCode | Descripción | Tamaño |
+| :--- | :---: | :--- | :---: |
+| **LDA** addr | 0x1 | Carga el valor de RAM[addr] en el Acumulador. | 2 Bytes |
+| **ADD** addr | 0x2 | Suma RAM[addr] al Acumulador. | 2 Bytes |
+| **SUB** addr | 0x5 | Resta RAM[addr] al Acumulador. | 2 Bytes |
+| **STA** addr | 0xD | Guarda el valor del Acumulador en RAM[addr]. | 2 Bytes |
+| **JMP** addr | 0x3 | Salta incondicionalmente a la dirección `addr`. | 2 Bytes |
+| **JZ** addr  | 0x4 | Salta a `addr` si el Acumulador es cero. | 2 Bytes |
+| **IF** addr  | 0xC | Salta a `addr` si el Acumulador NO es cero. | 2 Bytes |
+| **GRT** addr | 0xB | Acc = 1 si Acc > RAM[addr], sino Acc = 0. | 2 Bytes |
+| **EQL** addr | 0xA | Acc = 1 si Acc == RAM[addr], sino Acc = 0. | 2 Bytes |
+| **AND** addr | 0x6 | Operación lógica AND (Acc = Acc & RAM[addr]). | 2 Bytes |
+| **OR** addr  | 0x7 | Operación lógica OR (Acc = Acc \| RAM[addr]). | 2 Bytes |
+| **NOT**      | 0x9 | Invierte los bits del Acumulador. | 1 Byte |
+| **OUT**      | 0xE | Envía el valor del Acumulador al Registro de Salida. | 1 Byte |
+| **HLT**      | 0xF | Detiene la ejecución del procesador. | 1 Byte |
 
 ---
 
-## 3. Flujo de Software (Asm -> Hardware)
+## 3. Cómo Programar el Microprocesador
 
-El sistema incluye un **Loader (Cargador)** automatico que procesa archivos de texto plano con extension `.asm`.
+Los programas se escriben en archivos de texto con extensión `.asm`. El cargador (`Loader`) procesa estos archivos línea por línea.
 
-### Formato del archivo `programa.asm`:
-- Se escribe una instruccion o dato por linea.
-- El Loader mapea secuencialmente cada linea a una direccion de RAM (0, 1, 2...).
-- Para cargar datos directos (variables), simplemente escribe el numero en la linea correspondiente.
+### Reglas de Sintaxis:
+1.  **Instrucciones**: Escribe el mnemónico seguido de la dirección decimal (ej: `LDA 100`).
+2.  **Comentarios**: Usa el punto y coma `;` para añadir comentarios.
+3.  **Directiva de Memoria (`@`)**: Usa `@` seguido de un número para saltar a una dirección específica. Es vital para colocar datos (ej: `@100` seguido de `50` pone el dato 50 en la dirección 100).
+4.  **Alineación**: Recuerda que las instrucciones de 2 bytes ocupan dos posiciones de memoria. Si una instrucción está en ADDR 0, la siguiente debe estar en ADDR 2.
 
-**Ejemplo de Programa (Suma 3 + 6):**
+### Ejemplo de Programa:
 ```asm
-LDA 4    ; Direccion 0: Carga dato de la dir 4
-ADD 5    ; Direccion 1: Suma dato de la dir 5
-OUT      ; Direccion 2: Muestra resultado
-HLT      ; Direccion 3: Fin
-3        ; Direccion 4: Dato A
-6        ; Direccion 5: Dato B
+; Sumar 5 + 10
+LDA 100    ; Carga el 5 (ADDR 0-1)
+ADD 101    ; Suma el 10 (ADDR 2-3)
+OUT        ; Muestra resultado (ADDR 4)
+HLT        ; Fin (ADDR 5)
+
+@100
+5          ; Dato en ADDR 100
+@101
+10         ; Dato en ADDR 101
 ```
 
 ---
 
-## 4. Como Ejecutar
+## 4. Ejecución del Simulador
 
-### Requisitos
-- WSL (Ubuntu/Debian).
-- SystemC 3.0.0 instalado en `/usr/local/systemc`.
-- CMake y compilador C++.
+Para ejecutar un programa, compila el proyecto y pasa el nombre del archivo como argumento:
 
-### Comandos Rapidos
-1.  **Compilar y Correr Todo**:
-    ```bash
-    ./run_tests.sh
-    ```
-2.  **Ejecutar solo el programa principal (`programa.asm`)**:
-    ```bash
-    wsl bash -c "cp programa.asm build/ && cd build && ./microprocessor_final"
-    ```
+```bash
+# En el directorio build
+./microprocessor_final mi_programa.asm
+```
+
+El simulador mostrará en consola el rastro de cada ciclo de máquina (**T1 a T8**) y el valor final del registro de salida.
 
 ---
 
-## 5. Estructura del Proyecto
-- `/ALU`: Logica estructural a nivel de compuertas.
-- `/Control`: Unidad de Control (FSM), IR, PC.
-- `/Memory`: RAM y MAR.
-- `/Registers`: Acumulador, Registro B y Registro de Salida.
-- `/legacy`: Versiones anteriores del diseño para referencia.
-- `main.cpp`: Banco de pruebas principal con el Cargador de Programas.
-
----
-
-## 6. Visualizacion de Resultados
-El procesador genera dos tipos de salida:
-1.  **Terminal**: Muestra el rastro (trace) de cada ciclo (T1-T6) y los cambios en el registro de salida `[DISPLAY]`.
-2.  **Ondas (VCD)**: Genera archivos `.vcd` (ej. `microprocessor_loader.vcd`) que pueden abrirse con **GTKWave** para ver los cables internos.
+## 5. Ciclos de Máquina (Control Unit)
+El procesador utiliza una máquina de estados de 8 tiempos para procesar cada instrucción:
+- **T1-T3**: Fetch del OpCode (Busca el comando en la RAM).
+- **T4-T5**: Fetch del Operando (Busca la dirección o dato si aplica).
+- **T6**: Decodificación y preparación de buses.
+- **T7-T8**: Ejecución final (Escritura en registros o RAM).

@@ -9,9 +9,9 @@ SC_MODULE(RegisterB) {
     sc_in<bool> reset;
     sc_in<bool> load_enable;
     sc_in<sc_lv<8>> data_in;
-    sc_out<sc_uint<4>> data_out;
+    sc_out<sc_uint<8>> data_out;
 
-    sc_signal<sc_uint<4>> internal_data;
+    sc_signal<sc_uint<8>> internal_data;
 
     void process_load();
     void drive_output();

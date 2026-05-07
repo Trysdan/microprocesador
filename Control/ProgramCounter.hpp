@@ -12,7 +12,7 @@ SC_MODULE(ProgramCounter) {
     sc_in<sc_lv<8>> data_in;
     sc_out<sc_lv<8>> data_out;
 
-    sc_signal<sc_uint<4>> current_value;
+    sc_signal<sc_uint<8>> current_value;
 
     void update_pc();
     void drive_bus();

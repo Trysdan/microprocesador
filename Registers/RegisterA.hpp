@@ -12,7 +12,7 @@ SC_MODULE(RegisterA) {
     sc_in<sc_lv<8>> data_in;
     sc_out<sc_lv<8>> data_out;
 
-    sc_signal<sc_uint<4>> internal_data;
+    sc_signal<sc_uint<8>> internal_data;
 
     void write_data();
     void read_data();

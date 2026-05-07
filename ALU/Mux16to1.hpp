@@ -5,9 +5,9 @@
 
 SC_MODULE(Mux16to1) {
   // Definimos arreglos de puertos directamente
-  sc_in<bool> in[16][4];
+  sc_in<bool> in[16][8];
   sc_in<bool> sel[4];
-  sc_out<bool> out[4];
+  sc_out<bool> out[8];
 
   void process_mux();
 
@@ -16,6 +16,8 @@ SC_MODULE(Mux16to1) {
     // Sensibilidad a todas las entradas y al selector
     for (int i = 0; i < 4; i++) {
       sensitive << sel[i];
+    }
+    for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 16; j++) {
         sensitive << in[j][i];
       }

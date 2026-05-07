@@ -1,5 +1,5 @@
 #include <systemc.h>
-#include "RAM16x8.hpp"
+#include "RAM256x8.hpp"
 #include <iostream>
 
 int sc_main(int argc, char* argv[]) {
@@ -9,12 +9,12 @@ int sc_main(int argc, char* argv[]) {
     // Senales
     sc_signal<bool> ram_we;
     sc_signal<bool> ram_oe;
-    sc_signal<sc_uint<4>> ram_addr;
+    sc_signal<sc_uint<8>> ram_addr;
     sc_signal<sc_lv<8>> ram_data_in;
     sc_signal<sc_lv<8>> ram_data_out;
 
     // Instancia de la RAM
-    RAM16x8 ram("RAM");
+    RAM256x8 ram("RAM");
     ram.clk(clk);
     ram.write_enable(ram_we);
     ram.out_enable(ram_oe);

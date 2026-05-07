@@ -8,7 +8,7 @@ SC_MODULE(MAR) {
     sc_in<bool> reset;
     sc_in<bool> mar_load;
     sc_in<sc_lv<8>> data_in;
-    sc_out<sc_uint<4>> address;
+    sc_out<sc_uint<8>> address;
 
     void process_mar();
 

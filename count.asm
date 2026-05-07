@@ -1,0 +1,16 @@
+; --- COUNT (FINAL) ---
+LDA 100
+@2
+OUT
+SUB 101
+STA 100
+JZ 11
+JMP 2
+@11
+OUT
+HLT
+
+@100
+10
+@101
+1

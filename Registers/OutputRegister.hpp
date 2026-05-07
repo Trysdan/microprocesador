@@ -10,7 +10,7 @@ SC_MODULE(OutputRegister) {
     sc_in<bool> out_load;
     sc_in<sc_lv<8>> data_in;
 
-    sc_signal<sc_uint<4>> internal_value;
+    sc_signal<sc_uint<8>> internal_value;
 
     void process_load();
     void process_display();

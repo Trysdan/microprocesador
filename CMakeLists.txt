@@ -50,9 +50,9 @@ enable_testing()
 # Definimos los archivos fuente de la ALU para reutilizarlos en otros testbenches
 set(ALU_SOURCES
     ALU/ALU.cpp
-    ALU/AdderSub4Bit.cpp
-    ALU/ComparatorUnit4Bit.cpp
-    ALU/LogicUnit4Bit.cpp
+    ALU/AdderSub8Bit.cpp
+    ALU/LogicUnit8Bit.cpp
+    ALU/ComparatorUnit8Bit.cpp
     ALU/Mux16to1.cpp
 )
 
@@ -84,7 +84,7 @@ add_test(NAME Test_Register COMMAND tb_register)
 # ==========================================
 add_executable(tb_ram
     Memory/main.cpp
-    Memory/RAM16x8.cpp
+    Memory/RAM256x8.cpp
 )
 target_link_libraries(tb_ram PRIVATE SystemC::systemc)
 add_test(NAME Test_RAM COMMAND tb_ram)
@@ -94,7 +94,7 @@ add_test(NAME Test_RAM COMMAND tb_ram)
 # ==========================================
 add_executable(tb_bus
     Bus/main.cpp
-    Memory/RAM16x8.cpp
+    Memory/RAM256x8.cpp
     Registers/RegisterA.cpp
 )
 target_link_libraries(tb_bus PRIVATE SystemC::systemc)
@@ -134,7 +134,7 @@ add_test(NAME Test_CU COMMAND tb_cu)
 add_executable(tb_jump
     Control/main_jump.cpp
     ${ALU_SOURCES}
-    Memory/RAM16x8.cpp
+    Memory/RAM256x8.cpp
     Memory/MAR.cpp
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
@@ -150,7 +150,7 @@ add_test(NAME Test_Jump COMMAND tb_jump)
 add_executable(tb_output
     Registers/main_output.cpp
     ${ALU_SOURCES}
-    Memory/RAM16x8.cpp
+    Memory/RAM256x8.cpp
     Memory/MAR.cpp
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
@@ -167,7 +167,7 @@ add_test(NAME Test_Output COMMAND tb_output)
 add_executable(microprocessor_final
     main.cpp
     ${ALU_SOURCES}
-    Memory/RAM16x8.cpp
+    Memory/RAM256x8.cpp
     Memory/MAR.cpp
     Registers/RegisterA.cpp
     Registers/RegisterB.cpp
