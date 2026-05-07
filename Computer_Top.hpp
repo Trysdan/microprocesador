@@ -1,5 +1,5 @@
-#ifndef COMPUTER_TOP_H
-#define COMPUTER_TOP_H
+#ifndef COMPUTER_TOP_HPP
+#define COMPUTER_TOP_HPP
 
 #include <systemc.h>
 #include "ALU/ALU.hpp"
@@ -86,7 +86,7 @@ SC_MODULE(Computer_Top) {
         cu->ram_out(ram_out); cu->ram_write(ram_we); cu->acc_load(acc_load); 
         cu->acc_out(acc_out); cu->regB_load(regB_load); cu->alu_out(alu_out);
         cu->zero_flag(alu_zero); cu->out_load(out_load);
-        cu->acc_val(regA->internal_data); // Conexión directa del Acumulador para saltos precisos
+        cu->acc_val(regA->internal_data);
         
         pc_load.write(false);
 
@@ -105,20 +105,5 @@ SC_MODULE(Computer_Top) {
         sensitive << regA->internal_data << regB_val << opcode_ir;
     }
 };
-
-void Computer_Top::alu_glue_logic() {
-    sc_uint<8> a_val = regA->internal_data.read();
-    sc_uint<8> b_val = regB_val.read();
-    sc_uint<8> op = opcode_ir.read();
-    
-    for(int i=0; i<8; i++) {
-        alu_a[i].write(a_val[i]);
-        alu_b[i].write(b_val[i]);
-    }
-    for(int i=0; i<4; i++) {
-        alu_op[i].write(op[i]);
-    }
-}
-
 
 #endif

@@ -133,6 +133,7 @@ add_test(NAME Test_CU COMMAND tb_cu)
 # Componente 8: Testbench de Saltos (JMP y JZ)
 add_executable(tb_jump
     Control/main_jump.cpp
+    Computer_Top.cpp
     ${ALU_SOURCES}
     Memory/RAM256x8.cpp
     Memory/MAR.cpp
@@ -149,6 +150,7 @@ add_test(NAME Test_Jump COMMAND tb_jump)
 # Componente 9: Testbench de Registro de Salida (OUT)
 add_executable(tb_output
     Registers/main_output.cpp
+    Computer_Top.cpp
     ${ALU_SOURCES}
     Memory/RAM256x8.cpp
     Memory/MAR.cpp
@@ -166,6 +168,7 @@ add_test(NAME Test_Output COMMAND tb_output)
 # ==========================================
 add_executable(microprocessor_final
     main.cpp
+    Computer_Top.cpp
     ${ALU_SOURCES}
     Memory/RAM256x8.cpp
     Memory/MAR.cpp

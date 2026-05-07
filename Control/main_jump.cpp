@@ -1,5 +1,5 @@
 #include <systemc.h>
-#include "../Computer_Top.h"
+#include "../Computer_Top.hpp"
 #include <iostream>
 #include <iomanip>
 
